@@ -1,0 +1,47 @@
+{
+  "name": "codecarto",
+  "version": "0.1.0",
+  "description": "從程式碼自動生成、可人工策展、可向非技術人員簡報的互動式架構地圖",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "codecarto": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": ["architecture", "diagram", "nextjs", "visualization", "dependency-graph"],
+  "scripts": {
+    "build": "tsup && node scripts/copy-ui.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "chokidar": "catalog:",
+    "commander": "catalog:",
+    "get-port": "catalog:",
+    "jiti": "catalog:",
+    "open": "catalog:",
+    "picocolors": "^1.1.1",
+    "picomatch": "^4.0.2",
+    "sirv": "catalog:",
+    "ts-morph": "catalog:",
+    "ws": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@codecarto/analyzer": "workspace:*",
+    "@codecarto/server": "workspace:*",
+    "@codecarto/shared": "workspace:*",
+    "@codecarto/ui": "workspace:*",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:"
+  }
+}
