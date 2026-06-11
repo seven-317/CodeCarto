@@ -6,24 +6,21 @@ import {
   type ScanGraph,
 } from '@codecarto/shared'
 import type { XY } from '../layout'
+import { ACCENT, curatedColor, PALETTES, type Theme } from '../theme'
 
 /**
  * 單色系統:kind 以「左墨條」的明度與圖樣區分(opacity → pattern,不靠色相)。
  * 紅色保留給未解析呼叫 — 全畫面唯一的 interrupt。
+ * 'ink' / 'gray' 在元件端解析為 CSS 變數,跨模式自動切換。
  */
-export const KIND_META: Record<
-  NodeKind,
-  { label: string; bar: 'ink' | 'gray' | 'striped' | null; minimap: string }
-> = {
-  page: { label: 'Page', bar: 'ink', minimap: '#000000' },
-  api: { label: 'API', bar: 'gray', minimap: '#666666' },
-  service: { label: 'Service', bar: 'striped', minimap: '#999999' },
-  module: { label: 'Module', bar: 'gray', minimap: '#cccccc' },
-  file: { label: 'File', bar: null, minimap: '#bbbbbb' },
-  external: { label: 'External', bar: null, minimap: '#dddddd' },
+export const KIND_META: Record<NodeKind, { label: string; bar: 'ink' | 'gray' | 'striped' | null }> = {
+  page: { label: 'Page', bar: 'ink' },
+  api: { label: 'API', bar: 'gray' },
+  service: { label: 'Service', bar: 'striped' },
+  module: { label: 'Module', bar: 'gray' },
+  file: { label: 'File', bar: null },
+  external: { label: 'External', bar: null },
 }
-
-const BAR_FILL: Record<'ink' | 'gray', string> = { ink: '#000000', gray: '#666666' }
 
 export interface CartoNodeData extends Record<string, unknown> {
   nodeId: string
@@ -31,7 +28,7 @@ export interface CartoNodeData extends Record<string, unknown> {
   sub?: string
   kind: NodeKind
   runtime?: string
-  /** 左墨條:hex 色(curation 自訂)、'striped'、或 null(無條) */
+  /** 左墨條:'ink' | 'gray' | 'striped'(CSS 變數解析)或 hex(curation 自訂,已依 theme 轉換) */
   bar: string | null
   minimapColor: string
   pinned: boolean
@@ -51,6 +48,7 @@ interface BuildParams {
   showHidden: boolean
   highlightIds: Set<string> | null
   flashIds: Set<string>
+  theme: Theme
 }
 
 const ARROW = (color: string) => ({
@@ -62,7 +60,8 @@ const ARROW = (color: string) => ({
 
 /** ScanGraph + 策展 map → React Flow 的 nodes/edges */
 export function buildFlow(params: BuildParams): { nodes: CartoFlowNode[]; edges: Edge[] } {
-  const { graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds } = params
+  const { graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds, theme } = params
+  const palette = PALETTES[theme]
 
   const visible = new Set<string>()
   const nodes: CartoFlowNode[] = []
@@ -75,9 +74,7 @@ export function buildFlow(params: BuildParams): { nodes: CartoFlowNode[]; edges:
 
     const group = curation?.groupId ? map.groups[curation.groupId] : undefined
     const dimmed = highlightIds !== null && !highlightIds.has(n.id)
-    const meta = KIND_META[n.kind]
     const customColor = curation?.color ?? group?.color
-    const bar = customColor ?? (meta.bar === 'striped' ? 'striped' : meta.bar ? BAR_FILL[meta.bar] : null)
 
     nodes.push({
       id: n.id,
@@ -90,8 +87,8 @@ export function buildFlow(params: BuildParams): { nodes: CartoFlowNode[]; edges:
         sub: n.kind === 'page' || n.kind === 'api' ? n.filePath : n.filePath !== n.label ? n.filePath : undefined,
         kind: n.kind,
         runtime: n.runtime,
-        bar,
-        minimapColor: customColor ?? meta.minimap,
+        bar: customColor ? curatedColor(customColor, theme) : KIND_META[n.kind].bar,
+        minimapColor: customColor ? curatedColor(customColor, theme) : palette.minimap[n.kind],
         pinned: curation?.pinned ?? false,
         hidden: curation?.hidden ?? false,
         flash: flashIds.has(n.id),
@@ -108,7 +105,7 @@ export function buildFlow(params: BuildParams): { nodes: CartoFlowNode[]; edges:
     const dimmed = highlightIds !== null && !(highlightIds.has(e.source) && highlightIds.has(e.target))
 
     // 明度階梯:fetch(資料流)最重、service-call 次之、import 最輕;紅 = 未解析
-    const color = !e.resolved ? '#d71921' : e.kind === 'fetch' ? '#1a1a1a' : e.kind === 'service-call' ? '#999999' : '#cfcfcf'
+    const color = !e.resolved ? ACCENT : e.kind === 'fetch' ? palette.ink : e.kind === 'service-call' ? palette.mid : palette.faint
     edges.push({
       id: e.id,
       source: e.source,
@@ -130,7 +127,7 @@ export function buildFlow(params: BuildParams): { nodes: CartoFlowNode[]; edges:
     if (a.type !== 'edge') continue
     if (!visible.has(a.from) || !visible.has(a.to)) continue
     const dimmed = highlightIds !== null && !(highlightIds.has(a.from) && highlightIds.has(a.to))
-    const color = a.style?.color ?? '#1a1a1a'
+    const color = a.style?.color ? curatedColor(a.style.color, theme) : palette.ink
     edges.push({
       id: `ann:${a.id}`,
       source: a.from,
@@ -145,12 +142,12 @@ export function buildFlow(params: BuildParams): { nodes: CartoFlowNode[]; edges:
         opacity: dimmed ? 0.06 : 1,
       },
       labelStyle: {
-        fill: '#1a1a1a',
+        fill: palette.ink,
         fontSize: 10,
         fontFamily: "'Space Mono', monospace",
         letterSpacing: '0.04em',
       },
-      labelBgStyle: { fill: '#ffffff', fillOpacity: 1, stroke: '#cccccc', strokeWidth: 1 },
+      labelBgStyle: { fill: palette.surface, fillOpacity: 1, stroke: palette.borderVisible, strokeWidth: 1 },
       labelBgPadding: [6, 3],
       labelBgBorderRadius: 2,
     })

@@ -7,6 +7,7 @@ import {
 } from '@codecarto/shared'
 import { postMap } from './api'
 import type { XY } from './layout'
+import { applyTheme, initialTheme, type Theme } from './theme'
 
 export type SaveState = 'saved' | 'saving' | 'error'
 
@@ -27,6 +28,7 @@ interface CartoState {
   /** 正在 inline 改名的節點 */
   editingId: string | null
   saveState: SaveState
+  theme: Theme
 
   setGraph(graph: ScanGraph): void
   setMap(map: CartoMapFile): void
@@ -36,6 +38,7 @@ interface CartoState {
   select(id: string | null): void
   startConnect(id: string | null): void
   setEditing(id: string | null): void
+  setTheme(theme: Theme): void
 
   // —— 策展操作(全部寫進 map 並 debounce 存檔)——
   renameNode(id: string, label: string): void
@@ -87,6 +90,7 @@ export const useCartoStore = create<CartoState>((set, get) => {
     connectFrom: null,
     editingId: null,
     saveState: 'saved',
+    theme: initialTheme(),
 
     setGraph(graph) {
       const prev = get().graph
@@ -129,6 +133,11 @@ export const useCartoStore = create<CartoState>((set, get) => {
 
     setEditing(id) {
       set({ editingId: id })
+    },
+
+    setTheme(theme) {
+      applyTheme(theme)
+      set({ theme })
     },
 
     renameNode(id, label) {
@@ -196,6 +205,7 @@ export const useCartoStore = create<CartoState>((set, get) => {
 // e2e 測試與除錯句柄
 if (typeof window !== 'undefined') {
   ;(window as unknown as Record<string, unknown>).__cartoStore = useCartoStore
+  applyTheme(useCartoStore.getState().theme)
 }
 
 /** 點擊節點 → BFS 找出完整上下游鏈路 */

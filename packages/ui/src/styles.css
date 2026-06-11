@@ -25,6 +25,20 @@
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
+/* dark mode:OLED 暗房儀表板。accent / 狀態色跨模式不變。 */
+:root[data-theme='dark'] {
+  --black: #000000;
+  --surface: #111111;
+  --surface-raised: #1a1a1a;
+  --border: #222222;
+  --border-visible: #333333;
+  --text-disabled: #666666;
+  --text-secondary: #999999;
+  --text-primary: #e8e8e8;
+  --text-display: #ffffff;
+  --interactive: #5b9bf6;
+}
+
 html,
 body,
 #root {
@@ -97,6 +111,30 @@ body,
 .nd-chip[data-active='true'] {
   border-color: var(--text-display);
   color: var(--text-display);
+}
+
+/* segmented control(LIGHT | DARK)*/
+.nd-seg {
+  display: flex;
+  border: 1px solid var(--border-visible);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.nd-seg button {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 200ms var(--ease), color 200ms var(--ease);
+}
+.nd-seg button[data-active='true'] {
+  background: var(--text-display);
+  color: var(--surface);
 }
 
 .nd-menu-item {

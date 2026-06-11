@@ -4,6 +4,13 @@ import { useCartoStore } from '../store'
 import { NODE_WIDTH } from '../layout'
 import { KIND_META, type CartoFlowNode } from './buildFlow'
 
+/** 'ink' / 'gray' 用 CSS 變數,墨條明度隨 theme 自動切換;hex = curation 自訂色 */
+function barFill(bar: string): string {
+  if (bar === 'ink') return 'var(--text-display)'
+  if (bar === 'gray') return 'var(--text-secondary)'
+  return bar
+}
+
 /**
  * 節點 = 紙面上的儀表模組:白卡、1px 框、左墨條編碼 kind。
  * 階層全靠字級與灰階:KIND 標籤(mono caps 9px)→ 名稱(Grotesk 13px)→ 路徑(mono 10px)。
@@ -36,7 +43,7 @@ export function CartoNode({ data, selected }: NodeProps<CartoFlowNode>) {
         {data.bar && (
           <div
             className={`w-[3px] shrink-0 rounded-l-[3px] ${data.bar === 'striped' ? 'nd-bar-striped' : ''}`}
-            style={data.bar !== 'striped' ? { background: data.bar } : undefined}
+            style={data.bar !== 'striped' ? { background: barFill(data.bar) } : undefined}
           />
         )}
         <div className="px-2.5 py-1.5 min-w-0 flex-1">

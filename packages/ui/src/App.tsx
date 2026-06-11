@@ -16,6 +16,7 @@ import type { NodeKind } from '@codecarto/shared'
 import { fetchGraph, fetchMap, subscribeGraph } from './api'
 import { computeAutoLayout, NODE_HEIGHT, NODE_WIDTH, type XY } from './layout'
 import { useCartoStore } from './store'
+import { PALETTES } from './theme'
 import { buildFlow, KIND_META, type CartoNodeData } from './flow/buildFlow'
 import { CartoNode } from './flow/CartoNode'
 
@@ -49,6 +50,8 @@ function CartoApp() {
     flashIds,
     connectFrom,
     saveState,
+    theme,
+    setTheme,
     setGraph,
     setMap,
     setAutoPositions,
@@ -65,6 +68,11 @@ function CartoApp() {
   const [menu, setMenu] = useState<MenuState | null>(null)
   const [query, setQuery] = useState('')
   const flow = useReactFlow()
+
+  // e2e 測試與除錯句柄
+  useEffect(() => {
+    ;(window as unknown as Record<string, unknown>).__cartoFlow = flow
+  }, [flow])
 
   useEffect(() => {
     let cancelled = false
@@ -108,10 +116,12 @@ function CartoApp() {
     [map.layout2d, autoPositions],
   )
 
+  const palette = PALETTES[theme]
+
   const { nodes, edges } = useMemo(() => {
     if (!graph) return { nodes: [], edges: [] }
-    return buildFlow({ graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds })
-  }, [graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds])
+    return buildFlow({ graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds, theme })
+  }, [graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds, theme])
 
   const counts = useMemo(() => {
     const c = new Map<NodeKind, number>()
@@ -146,7 +156,7 @@ function CartoApp() {
     if (!el) return
     const dataUrl = await toPng(el, {
       pixelRatio: 2,
-      backgroundColor: '#f5f5f5',
+      backgroundColor: palette.page,
       filter: (node) =>
         !(node instanceof HTMLElement && node.classList.contains('react-flow__panel')),
     })
@@ -220,16 +230,16 @@ function CartoApp() {
         }}
       >
         {/* dot-matrix 紙面 */}
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#dcdcdc" />
+        <Background variant={BackgroundVariant.Dots} gap={16} size={1} color={palette.dots} />
         <Controls position="bottom-right" showInteractive={false} />
         <MiniMap
           position="bottom-right"
           pannable
           zoomable
           nodeColor={(n) => (n.data as CartoNodeData).minimapColor}
-          nodeStrokeColor="#cccccc"
-          maskColor="rgba(245, 245, 245, 0.85)"
-          style={{ background: '#ffffff' }}
+          nodeStrokeColor={palette.borderVisible}
+          maskColor={palette.mask}
+          style={{ background: palette.surface }}
         />
 
         {/* 工具列(tertiary:推到邊緣,mono caps)*/}
@@ -293,6 +303,14 @@ function CartoApp() {
         {/* 視圖選項 */}
         <Panel position="top-right">
           <div className="nd-card flex items-center gap-2.5 px-3 py-2">
+            <div className="nd-seg">
+              <button data-active={theme === 'light'} onClick={() => setTheme('light')}>
+                Light
+              </button>
+              <button data-active={theme === 'dark'} onClick={() => setTheme('dark')}>
+                Dark
+              </button>
+            </div>
             <button className="nd-chip" data-active={showExternal} onClick={() => setShowExternal(!showExternal)}>
               Externals
             </button>
@@ -368,7 +386,12 @@ function LegendMarker({ kind }: { kind: NodeKind }) {
   const meta = KIND_META[kind]
   if (meta.bar === 'striped') return <span className="nd-bar-striped w-1 h-3.5 shrink-0" />
   if (meta.bar)
-    return <span className="w-1 h-3.5 shrink-0" style={{ background: meta.bar === 'ink' ? '#000' : '#666' }} />
+    return (
+      <span
+        className="w-1 h-3.5 shrink-0"
+        style={{ background: meta.bar === 'ink' ? 'var(--text-display)' : 'var(--text-secondary)' }}
+      />
+    )
   return (
     <span
       className="w-2.5 h-2.5 shrink-0"
