@@ -1,0 +1,277 @@
+@import 'tailwindcss';
+@import '@xyflow/react/dist/style.css';
+
+/* ——— Nothing design tokens(light mode:printed technical manual)——— */
+:root {
+  --black: #f5f5f5; /* page background(warm off-white paper) */
+  --surface: #ffffff;
+  --surface-raised: #f0f0f0;
+  --border: #e8e8e8;
+  --border-visible: #cccccc;
+  --text-disabled: #999999;
+  --text-secondary: #666666;
+  --text-primary: #1a1a1a;
+  --text-display: #000000;
+  --accent: #d71921;
+  --accent-subtle: rgba(215, 25, 33, 0.15);
+  --success: #4a9e5c;
+  --warning: #d4a843;
+  --interactive: #007aff;
+
+  --font-body: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'Space Mono', 'JetBrains Mono', 'SF Mono', monospace;
+  --font-display: 'Doto', 'Space Mono', monospace;
+
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* dark mode:OLED 暗房儀表板。accent / 狀態色跨模式不變。 */
+:root[data-theme='dark'] {
+  --black: #000000;
+  --surface: #111111;
+  --surface-raised: #1a1a1a;
+  --border: #222222;
+  --border-visible: #333333;
+  --text-disabled: #666666;
+  --text-secondary: #999999;
+  --text-primary: #e8e8e8;
+  --text-display: #ffffff;
+  --interactive: #5b9bf6;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--black);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+/* ——— Utilities ——— */
+.nd-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.nd-mono {
+  font-family: var(--font-mono);
+}
+
+.nd-card {
+  background: var(--surface);
+  border: 1px solid var(--border-visible);
+  border-radius: 8px;
+}
+
+.nd-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-visible);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease);
+}
+.nd-btn:hover {
+  border-color: var(--text-display);
+}
+
+.nd-btn-primary {
+  border-color: var(--text-display);
+  background: var(--text-display);
+  color: var(--surface);
+}
+.nd-btn-primary:hover {
+  opacity: 0.85;
+}
+
+/* toggle chips(EXTERNALS / HIDDEN)*/
+.nd-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-visible);
+  background: transparent;
+  color: var(--text-disabled);
+  cursor: pointer;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease);
+}
+.nd-chip[data-active='true'] {
+  border-color: var(--text-display);
+  color: var(--text-display);
+}
+
+/* segmented control(LIGHT | DARK)*/
+.nd-seg {
+  display: flex;
+  border: 1px solid var(--border-visible);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.nd-seg button {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 200ms var(--ease), color 200ms var(--ease);
+}
+.nd-seg button[data-active='true'] {
+  background: var(--text-display);
+  color: var(--surface);
+}
+
+.nd-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  padding: 9px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.nd-menu-item:hover {
+  background: var(--surface-raised);
+}
+
+.nd-input {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-visible);
+  color: var(--text-primary);
+  padding: 6px 2px;
+  outline: none;
+  transition: border-color 200ms var(--ease);
+}
+.nd-input:focus {
+  border-bottom-color: var(--text-display);
+}
+.nd-input::placeholder {
+  color: var(--text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+}
+
+/* ——— Graph nodes ——— */
+.nd-node {
+  background: var(--surface);
+  border: 1px solid var(--border-visible);
+  border-radius: 4px;
+  transition: border-color 150ms var(--ease), opacity 200ms var(--ease);
+}
+.nd-node[data-selected='true'] {
+  border-color: var(--text-display);
+  outline: 1px solid var(--text-display);
+}
+.nd-node[data-dashed='true'] {
+  border-style: dashed;
+}
+.nd-node[data-unresolved='true'] {
+  border-color: var(--accent);
+}
+.nd-node[data-curated-hidden='true'] {
+  opacity: 0.45;
+  border-style: dashed;
+}
+
+/* service 節點的左墨條:以圖樣(非色彩)區分 */
+.nd-bar-striped {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--text-primary) 0,
+    var(--text-primary) 2px,
+    transparent 2px,
+    transparent 5px
+  );
+}
+
+.carto-dimmed {
+  opacity: 0.13;
+  transition: opacity 200ms var(--ease);
+}
+
+/* watch mode:新節點以 success 外框機械式閃爍 */
+@keyframes carto-flash {
+  0%,
+  49% {
+    outline: 2px solid var(--success);
+    outline-offset: 2px;
+  }
+  50%,
+  100% {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+}
+.carto-flash {
+  animation: carto-flash 0.8s steps(1, end) 3;
+}
+
+/* ——— React Flow chrome overrides(flat, no shadows)——— */
+.react-flow__node {
+  font-family: var(--font-body);
+}
+
+.react-flow__handle {
+  width: 6px;
+  height: 6px;
+  min-width: 6px;
+  min-height: 6px;
+  border: none;
+  border-radius: 0;
+  background: var(--border-visible);
+}
+
+.react-flow__controls {
+  box-shadow: none;
+  border: 1px solid var(--border-visible);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.react-flow__controls-button {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+.react-flow__controls-button svg {
+  fill: var(--text-primary);
+}
+.react-flow__controls-button:hover {
+  background: var(--surface-raised);
+}
+
+.react-flow__minimap {
+  border: 1px solid var(--border-visible);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.react-flow__attribution {
+  background: transparent;
+  color: var(--text-disabled);
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
