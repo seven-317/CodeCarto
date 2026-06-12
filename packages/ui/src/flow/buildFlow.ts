@@ -114,6 +114,7 @@ export function buildFlow(params: BuildParams): { nodes: CartoFlowNode[]; edges:
       id: e.id,
       source: e.source,
       target: e.target,
+      type: 'carto', // 封包動畫邊;annotation 邊有 label,維持內建型別
       deletable: false,
       markerEnd: e.kind === 'import' ? undefined : ARROW(color),
       style: {
