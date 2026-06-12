@@ -146,12 +146,61 @@ body,
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-primary);
-  padding: 9px 12px;
-  border-radius: 4px;
+  padding: 9px 12px 9px 14px;
   cursor: pointer;
+  position: relative;
 }
 .nd-menu-item:hover {
   background: var(--surface-raised);
+}
+/* active item: left 2px accent bar */
+.nd-menu-item[data-active-item] {
+  color: var(--text-display);
+  padding-left: 12px;
+  border-left: 2px solid var(--accent);
+}
+
+/* 工具列左區(品牌+搜尋+儲存狀態) */
+.nd-toolbar-left {
+  display: flex;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+}
+
+/* 工具列右區(控制群) */
+.nd-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+/* 手機版:右區換到第二排 */
+@media (max-width: 700px) {
+  .nd-toolbar-right {
+    width: 100%;
+    height: auto;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+}
+
+/* toolbar vertical divider — 手機版隱藏,避免換行後出現孤立豎線 */
+.carto-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+@media (max-width: 700px) {
+  .carto-divider {
+    display: none;
+  }
 }
 
 .nd-input {
@@ -267,6 +316,14 @@ body,
   border: 1px solid var(--border-visible);
   border-radius: 4px;
   overflow: hidden;
+}
+
+/* ——— 簡報模式:隱藏所有 chrome,只留地圖與底部提示 ——— */
+[data-present] .react-flow__panel,
+[data-present] .react-flow__controls,
+[data-present] .react-flow__minimap,
+[data-present] .react-flow__attribution {
+  display: none !important;
 }
 
 /* ——— RWD:窄螢幕讓地圖本體優先 ———

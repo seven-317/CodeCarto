@@ -17,6 +17,8 @@ function barFill(bar: string): string {
  */
 export function CartoNode({ data, selected }: NodeProps<CartoFlowNode>) {
   const editing = useCartoStore((s) => s.editingId === data.nodeId)
+  // 簡報模式:放大名稱、隱藏檔案路徑等技術細節
+  const presenting = useCartoStore((s) => s.presenting)
   const [draft, setDraft] = useState(data.label)
 
   useEffect(() => {
@@ -82,11 +84,15 @@ export function CartoNode({ data, selected }: NodeProps<CartoFlowNode>) {
               }}
             />
           ) : (
-            <div className="truncate font-medium" style={{ fontSize: 13, color: 'var(--text-primary)' }} title={data.label}>
+            <div
+              className="truncate font-medium"
+              style={{ fontSize: presenting ? 16 : 13, color: 'var(--text-primary)' }}
+              title={data.label}
+            >
               {data.label}
             </div>
           )}
-          {data.sub && (
+          {data.sub && !presenting && (
             <div className="nd-mono truncate" style={{ fontSize: 10, color: 'var(--text-disabled)' }} title={data.sub}>
               {data.sub}
             </div>
