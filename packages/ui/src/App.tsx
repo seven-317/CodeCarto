@@ -3,6 +3,7 @@ import {
   Background,
   BackgroundVariant,
   Controls,
+  getViewportForBounds,
   MiniMap,
   Panel,
   ReactFlow,
@@ -152,13 +153,32 @@ function CartoApp() {
   }
 
   const exportPng = async () => {
-    const el = document.querySelector('.react-flow') as HTMLElement | null
+    // 只拍 viewport 圖層(節點+連線),對它套「框住全圖」的 transform,
+    // 與當前畫面的縮放/平移無關 — 輸出永遠是完整地圖
+    const el = document.querySelector('.react-flow__viewport') as HTMLElement | null
     if (!el) return
+    // 手動算邊界:getNodesBounds 在節點缺 measured 尺寸時會當成 0,導致右/下緣被裁
+    const ns = flow.getNodes()
+    if (ns.length === 0) return
+    const minX = Math.min(...ns.map((n) => n.position.x))
+    const minY = Math.min(...ns.map((n) => n.position.y))
+    const maxX = Math.max(...ns.map((n) => n.position.x + (n.measured?.width ?? NODE_WIDTH)))
+    const maxY = Math.max(...ns.map((n) => n.position.y + (n.measured?.height ?? NODE_HEIGHT)))
+    const bounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+    const PADDING = 48
+    const width = Math.ceil(bounds.width) + PADDING * 2
+    const height = Math.ceil(bounds.height) + PADDING * 2
+    const viewport = getViewportForBounds(bounds, width, height, 1, 1, 0)
     const dataUrl = await toPng(el, {
       pixelRatio: 2,
       backgroundColor: palette.page,
-      filter: (node) =>
-        !(node instanceof HTMLElement && node.classList.contains('react-flow__panel')),
+      width,
+      height,
+      style: {
+        width: `${width}px`,
+        height: `${height}px`,
+        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+      },
     })
     const a = document.createElement('a')
     a.href = dataUrl
@@ -242,9 +262,11 @@ function CartoApp() {
           style={{ background: palette.surface }}
         />
 
-        {/* 工具列(tertiary:推到邊緣,mono caps)*/}
-        <Panel position="top-left">
-          <div className="nd-card flex items-center gap-5 px-4 py-2.5">
+        {/* 工具列(tertiary:推到邊緣,mono caps)。
+            單一全寬 panel + flex-wrap:窄螢幕兩張卡換行堆疊,而非絕對定位互相重疊 */}
+        <Panel position="top-left" style={{ width: 'calc(100% - 30px)', pointerEvents: 'none' }}>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="nd-card flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-2.5" style={{ pointerEvents: 'auto' }}>
             <span
               className="nd-mono font-bold uppercase"
               style={{ fontSize: 12, letterSpacing: '0.14em', color: 'var(--text-display)' }}
@@ -253,7 +275,7 @@ function CartoApp() {
             </span>
             <div className="relative">
               <input
-                className="nd-input w-60"
+                className="nd-input w-36 md:w-60"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -262,7 +284,10 @@ function CartoApp() {
                 placeholder="Search"
               />
               {matches.length > 0 && (
-                <div className="nd-card absolute top-full mt-2 w-72 overflow-hidden z-50" style={{ borderRadius: 8 }}>
+                <div
+                  className="nd-card absolute top-full mt-2 w-72 max-w-[80vw] overflow-hidden z-50"
+                  style={{ borderRadius: 8 }}
+                >
                   {matches.map((m) => (
                     <button
                       key={m.id}
@@ -298,11 +323,9 @@ function CartoApp() {
               {saveState === 'error' ? '[ERROR]' : saveState === 'saving' ? '[SAVING...]' : '[SAVED]'}
             </span>
           </div>
-        </Panel>
 
-        {/* 視圖選項 */}
-        <Panel position="top-right">
-          <div className="nd-card flex items-center gap-2.5 px-3 py-2">
+          {/* 視圖選項 */}
+          <div className="nd-card flex flex-wrap items-center gap-2.5 px-3 py-2" style={{ pointerEvents: 'auto' }}>
             <div className="nd-seg">
               <button data-active={theme === 'light'} onClick={() => setTheme('light')}>
                 Light
@@ -329,6 +352,7 @@ function CartoApp() {
             <button className="nd-btn nd-btn-primary" style={{ padding: '6px 14px' }} onClick={exportPng}>
               Export PNG
             </button>
+          </div>
           </div>
         </Panel>
 
