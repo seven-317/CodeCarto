@@ -84,7 +84,6 @@ function CartoApp() {
   const [query, setQuery] = useState('')
   const flow = useReactFlow()
 
-  // e2e 測試與除錯句柄
   useEffect(() => {
     ;(window as unknown as Record<string, unknown>).__cartoFlow = flow
   }, [flow])
@@ -93,7 +92,6 @@ function CartoApp() {
     let cancelled = false
     Promise.all([fetchGraph(), fetchMap()])
       .then(async ([g, m]) => {
-        // 佈局算完才掛 graph,首次渲染就有定位,fitView 才能正確取景
         const positions = await computeAutoLayout(g)
         if (cancelled) return
         setMap(m)
@@ -113,7 +111,6 @@ function CartoApp() {
     }
   }, [setGraph, setMap, setAutoPositions])
 
-  // Esc 逐層退出:導覽 → 簡報 → 連線/高亮/選單;方向鍵驅動路徑導覽
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const s = useCartoStore.getState()
@@ -142,7 +139,6 @@ function CartoApp() {
     [map.layout2d, autoPositions],
   )
 
-  // 路徑導覽:每一步把鏡頭平移到目前節點,像簡報翻頁
   useEffect(() => {
     const id = walk?.ids[walk.step]
     if (!id) return
@@ -154,7 +150,6 @@ function CartoApp() {
 
   const { nodes, edges } = useMemo(() => {
     if (!graph) return { nodes: [], edges: [] }
-    // 路徑導覽時高亮 = 已走過的前綴;一般點擊 = 完整鏈路
     const effectiveHighlight = walk ? new Set(walk.ids.slice(0, walk.step + 1)) : highlightIds
     return buildFlow({
       graph,
@@ -169,7 +164,6 @@ function CartoApp() {
     })
   }, [graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds, theme, walk, viewNodeIds])
 
-  // stale 策展:map 裡存在但 graph 已不存在的節點 id(檔案被改名/刪除)
   const staleIds = useMemo(() => {
     if (!graph) return []
     const live = new Set(graph.nodes.map((n) => n.id))
@@ -178,8 +172,6 @@ function CartoApp() {
     )
   }, [graph, map.nodes, map.layout2d])
 
-  // 改名遷移建議:同 kind 前綴 + 同檔名尾段的新節點。
-  // file 節點的 id 是純相對路徑(無 kind: 前綴),前綴視為空字串。
   const migrationTarget = useCallback(
     (staleId: string): string | undefined => {
       if (!graph) return undefined
@@ -222,11 +214,8 @@ function CartoApp() {
   }
 
   const exportPng = async () => {
-    // 只拍 viewport 圖層(節點+連線),對它套「框住全圖」的 transform,
-    // 與當前畫面的縮放/平移無關 — 輸出永遠是完整地圖
     const el = document.querySelector('.react-flow__viewport') as HTMLElement | null
     if (!el) return
-    // 手動算邊界:getNodesBounds 在節點缺 measured 尺寸時會當成 0,導致右/下緣被裁
     const ns = flow.getNodes()
     if (ns.length === 0) return
     const minX = Math.min(...ns.map((n) => n.position.x))
@@ -266,7 +255,6 @@ function CartoApp() {
   const saveCurrentView = () => {
     const label = prompt('View name:')
     if (!label?.trim()) return
-    // 有套用中的視圖或鏈路高亮就存那個子集,否則存全部(空陣列)
     const nodeIds = viewNodeIds ? [...viewNodeIds] : highlightIds ? [...highlightIds] : []
     saveView({
       id: `view-${Date.now().toString(36)}`,
@@ -289,7 +277,6 @@ function CartoApp() {
     )
   }
 
-  // 載入畫面:唯一的 Doto dot-matrix 時刻
   if (!graph) {
     return (
       <div className="h-full flex flex-col items-center justify-center gap-5">
@@ -331,7 +318,6 @@ function CartoApp() {
         zoomOnDoubleClick={false}
         onNodeDoubleClick={(_, node) => useCartoStore.getState().setEditing(node.id)}
         onNodeClick={(_, node) => {
-          // 簡報模式:點節點 = 選定鏈路開始導覽(依 x 座標排序,Page → Service)
           if (presenting && graph) {
             const chain = chainOf(graph, node.id)
             const visibleIds = new Set(nodes.map((n) => n.id))
@@ -362,7 +348,6 @@ function CartoApp() {
           }
         }}
       >
-        {/* dot-matrix 紙面 */}
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} color={palette.dots} />
         <Controls position="bottom-right" showInteractive={false} />
         <MiniMap
@@ -375,20 +360,33 @@ function CartoApp() {
           style={{ background: palette.surface }}
         />
 
-        {/* 工具列(tertiary:推到邊緣,mono caps)。
-            單一全寬 panel + flex-wrap:窄螢幕兩張卡換行堆疊,而非絕對定位互相重疊 */}
+        {/* 工具列:單一卡片,內部 pipe 分隔 */}
         <Panel position="top-left" style={{ width: 'calc(100% - 30px)', pointerEvents: 'none' }}>
-          <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="nd-card flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-2.5" style={{ pointerEvents: 'auto' }}>
-            <span
-              className="nd-mono font-bold uppercase"
-              style={{ fontSize: 12, letterSpacing: '0.14em', color: 'var(--text-display)' }}
+          <div
+            className="nd-card flex items-stretch overflow-visible w-full"
+            style={{ pointerEvents: 'auto', height: 44 }}
+          >
+            {/* 品牌名稱 — dot-matrix 顯示字體,全畫面唯一的 display moment */}
+            <div
+              className="px-4 flex items-center shrink-0"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 17,
+                letterSpacing: '0.08em',
+                color: 'var(--text-display)',
+                borderRight: '1px solid var(--border)',
+              }}
             >
-              Codecarto
-            </span>
-            <div className="relative">
+              CODECARTO
+            </div>
+
+            {/* 搜尋 */}
+            <div
+              className="flex items-center px-3 relative"
+              style={{ borderRight: '1px solid var(--border)' }}
+            >
               <input
-                className="nd-input w-36 md:w-60"
+                className="nd-input w-32 sm:w-52"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -398,7 +396,7 @@ function CartoApp() {
               />
               {matches.length > 0 && (
                 <div
-                  className="nd-card absolute top-full mt-2 w-72 max-w-[80vw] overflow-hidden z-50"
+                  className="nd-card absolute top-full left-0 mt-1 w-72 max-w-[80vw] overflow-hidden z-50"
                   style={{ borderRadius: 8 }}
                 >
                   {matches.map((m) => (
@@ -421,283 +419,338 @@ function CartoApp() {
                 </div>
               )}
             </div>
-            <span
-              className="nd-label"
-              style={{
-                fontSize: 10,
-                color:
-                  saveState === 'error'
-                    ? 'var(--accent)'
-                    : saveState === 'saving'
-                      ? 'var(--warning)'
-                      : 'var(--text-disabled)',
-              }}
-            >
-              {saveState === 'error' ? '[ERROR]' : saveState === 'saving' ? '[SAVING...]' : '[SAVED]'}
-            </span>
-          </div>
 
-          {/* 視圖選項 */}
-          <div className="nd-card flex flex-wrap items-center gap-2.5 px-3 py-2" style={{ pointerEvents: 'auto' }}>
-            <div className="nd-seg">
-              <button data-active={theme === 'light'} onClick={() => setTheme('light')}>
-                Light
-              </button>
-              <button data-active={theme === 'dark'} onClick={() => setTheme('dark')}>
-                Dark
-              </button>
+            {/* 儲存狀態 */}
+            <div className="flex items-center px-3" style={{ borderRight: '1px solid var(--border)' }}>
+              <span
+                className="nd-label"
+                style={{
+                  fontSize: 10,
+                  color:
+                    saveState === 'error'
+                      ? 'var(--accent)'
+                      : saveState === 'saving'
+                        ? 'var(--warning)'
+                        : 'var(--text-disabled)',
+                }}
+              >
+                {saveState === 'error' ? '[ERROR]' : saveState === 'saving' ? '[SAVING...]' : '[SAVED]'}
+              </span>
             </div>
-            <button className="nd-chip" data-active={showExternal} onClick={() => setShowExternal(!showExternal)}>
-              Externals
-            </button>
-            <button className="nd-chip" data-active={showHidden} onClick={() => setShowHidden(!showHidden)}>
-              Hidden
-            </button>
 
-            {/* stale 策展:graph 已不存在的 id,提供遷移或清除 */}
-            {staleIds.length > 0 && (
+            {/* 推到右側 */}
+            <div className="flex-1" />
+
+            {/* 右側控制群 */}
+            <div className="flex items-center gap-2 px-3">
+              {/* 主題切換 */}
+              <div className="nd-seg shrink-0">
+                <button data-active={theme === 'light'} onClick={() => setTheme('light')}>
+                  Light
+                </button>
+                <button data-active={theme === 'dark'} onClick={() => setTheme('dark')}>
+                  Dark
+                </button>
+              </div>
+
+              <div className="carto-divider" />
+
+              <button className="nd-chip" data-active={showExternal} onClick={() => setShowExternal(!showExternal)}>
+                Externals
+              </button>
+              <button className="nd-chip" data-active={showHidden} onClick={() => setShowHidden(!showHidden)}>
+                Hidden
+              </button>
+
+              {/* Stale 策展警告 */}
+              {staleIds.length > 0 && (
+                <div className="relative">
+                  <button
+                    className="nd-chip"
+                    style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setOpenMenu(openMenu === 'stale' ? null : 'stale')
+                    }}
+                  >
+                    Stale {staleIds.length}
+                  </button>
+                  {openMenu === 'stale' && (
+                    <div
+                      className="nd-card absolute right-0 top-full mt-2 w-80 overflow-hidden z-50"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div
+                        className="nd-label px-3 py-2.5"
+                        style={{ fontSize: 9, color: 'var(--text-disabled)', borderBottom: '1px solid var(--border)' }}
+                      >
+                        Curation without a matching node
+                      </div>
+                      {staleIds.map((id) => {
+                        const target = migrationTarget(id)
+                        return (
+                          <div key={id} className="px-3 py-2.5" style={{ borderBottom: '1px solid var(--border)' }}>
+                            <div className="nd-mono truncate" style={{ fontSize: 10, color: 'var(--text-primary)' }} title={id}>
+                              {id}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1.5">
+                              {target && (
+                                <button
+                                  className="nd-chip"
+                                  style={{ fontSize: 9 }}
+                                  title={`Migrate curation to ${target}`}
+                                  onClick={() => migrateCuration(id, target)}
+                                >
+                                  → {target.split('/').pop()}
+                                </button>
+                              )}
+                              <button
+                                className="nd-chip ml-auto"
+                                style={{ fontSize: 9, borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                                onClick={() => removeCuration(id)}
+                              >
+                                Drop
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                      <button
+                        className="nd-menu-item"
+                        style={{ color: 'var(--accent)' }}
+                        onClick={() => {
+                          staleIds.forEach((id) => removeCuration(id))
+                          setOpenMenu(null)
+                        }}
+                      >
+                        Drop all
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="carto-divider" />
+
+              {/* NamedView */}
               <div className="relative">
                 <button
                   className="nd-chip"
-                  style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}
+                  data-active={!!activeViewId || openMenu === 'views'}
                   onClick={(e) => {
                     e.stopPropagation()
-                    setOpenMenu(openMenu === 'stale' ? null : 'stale')
+                    setOpenMenu(openMenu === 'views' ? null : 'views')
                   }}
                 >
-                  Stale {staleIds.length}
+                  Views
                 </button>
-                {openMenu === 'stale' && (
+                {openMenu === 'views' && (
                   <div
-                    className="nd-card absolute right-0 top-full mt-2 w-80 p-1.5 z-50"
+                    className="nd-card absolute right-0 top-full mt-2 w-64 overflow-hidden z-50"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="nd-label px-3 py-2" style={{ fontSize: 9, color: 'var(--text-disabled)' }}>
-                      Curation without a matching node
-                    </div>
-                    {staleIds.map((id) => {
-                      const target = migrationTarget(id)
-                      return (
-                        <div key={id} className="px-3 py-2" style={{ borderTop: '1px solid var(--border)' }}>
-                          <div className="nd-mono truncate" style={{ fontSize: 10, color: 'var(--text-primary)' }} title={id}>
-                            {id}
-                          </div>
-                          <div className="flex items-center gap-2 mt-1.5">
-                            {target && (
-                              <button
-                                className="nd-chip"
-                                style={{ fontSize: 9 }}
-                                title={`Migrate curation to ${target}`}
-                                onClick={() => migrateCuration(id, target)}
-                              >
-                                → {target.split('/').pop()}
-                              </button>
-                            )}
-                            <button
-                              className="nd-chip ml-auto"
-                              style={{ fontSize: 9 }}
-                              onClick={() => removeCuration(id)}
-                            >
-                              Drop
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    })}
                     <button
-                      className="nd-menu-item mt-1"
-                      style={{ color: 'var(--accent)' }}
+                      className="nd-menu-item"
                       onClick={() => {
-                        staleIds.forEach((id) => removeCuration(id))
+                        saveCurrentView()
                         setOpenMenu(null)
                       }}
                     >
-                      Drop all
+                      Save current...
+                    </button>
+                    <div style={{ borderTop: '1px solid var(--border)' }}>
+                      <button
+                        className="nd-menu-item"
+                        data-active-item={!activeViewId || undefined}
+                        onClick={() => {
+                          applyView(null)
+                          flow.fitView({ duration: 400 })
+                          setOpenMenu(null)
+                        }}
+                      >
+                        Full map
+                      </button>
+                      {map.views.map((v) => (
+                        <div key={v.id} className="flex items-center">
+                          <button
+                            className="nd-menu-item flex-1 truncate"
+                            data-active-item={activeViewId === v.id || undefined}
+                            onClick={() => {
+                              applyView(v)
+                              if (v.viewport) flow.setViewport(v.viewport, { duration: 400 })
+                              else setTimeout(() => flow.fitView({ duration: 400 }), 50)
+                              setOpenMenu(null)
+                            }}
+                          >
+                            {v.label}
+                          </button>
+                          <button
+                            className="nd-mono px-3 py-2 cursor-pointer"
+                            style={{ fontSize: 10, color: 'var(--text-disabled)' }}
+                            title="Delete view"
+                            onClick={() => deleteView(v.id)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <button
+                className="nd-btn"
+                style={{ padding: '5px 12px' }}
+                onClick={() => {
+                  if (confirm('Reset manual layout? Pinned nodes stay.')) resetLayout()
+                }}
+              >
+                Relayout
+              </button>
+
+              <button
+                className="nd-btn"
+                style={{ padding: '5px 12px' }}
+                onClick={() => setPresenting(true)}
+              >
+                Present
+              </button>
+
+              {/* 匯出 */}
+              <div className="relative">
+                <button
+                  className="nd-btn nd-btn-primary"
+                  style={{ padding: '5px 12px' }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setOpenMenu(openMenu === 'export' ? null : 'export')
+                  }}
+                >
+                  Export
+                </button>
+                {openMenu === 'export' && (
+                  <div
+                    className="nd-card absolute right-0 top-full mt-2 w-52 overflow-hidden z-50"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="nd-menu-item"
+                      onClick={() => {
+                        void exportPng()
+                        setOpenMenu(null)
+                      }}
+                    >
+                      PNG — bitmap 2×
+                    </button>
+                    <button
+                      className="nd-menu-item"
+                      onClick={() => {
+                        exportSvg()
+                        setOpenMenu(null)
+                      }}
+                    >
+                      SVG — vector
+                    </button>
+                    <button
+                      className="nd-menu-item"
+                      onClick={() => {
+                        exportHtml()
+                        setOpenMenu(null)
+                      }}
+                    >
+                      HTML — interactive
                     </button>
                   </div>
                 )}
               </div>
-            )}
-
-            {/* NamedView */}
-            <div className="relative">
-              <button
-                className="nd-chip"
-                data-active={!!activeViewId || openMenu === 'views'}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setOpenMenu(openMenu === 'views' ? null : 'views')
-                }}
-              >
-                Views
-              </button>
-              {openMenu === 'views' && (
-                <div
-                  className="nd-card absolute right-0 top-full mt-2 w-64 p-1.5 z-50"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    className="nd-menu-item"
-                    onClick={() => {
-                      saveCurrentView()
-                      setOpenMenu(null)
-                    }}
-                  >
-                    Save current...
-                  </button>
-                  <button
-                    className="nd-menu-item"
-                    style={!activeViewId ? { color: 'var(--text-display)' } : undefined}
-                    onClick={() => {
-                      applyView(null)
-                      flow.fitView({ duration: 400 })
-                      setOpenMenu(null)
-                    }}
-                  >
-                    Full map
-                  </button>
-                  {map.views.map((v) => (
-                    <div key={v.id} className="flex items-center">
-                      <button
-                        className="nd-menu-item flex-1 truncate"
-                        style={activeViewId === v.id ? { color: 'var(--text-display)' } : undefined}
-                        onClick={() => {
-                          applyView(v)
-                          if (v.viewport) flow.setViewport(v.viewport, { duration: 400 })
-                          else setTimeout(() => flow.fitView({ duration: 400 }), 50)
-                          setOpenMenu(null)
-                        }}
-                      >
-                        {v.label}
-                      </button>
-                      <button
-                        className="nd-mono px-2 cursor-pointer"
-                        style={{ fontSize: 10, color: 'var(--text-disabled)' }}
-                        title="Delete view"
-                        onClick={() => deleteView(v.id)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
-
-            <button
-              className="nd-btn"
-              style={{ padding: '6px 14px' }}
-              onClick={() => {
-                if (confirm('Reset manual layout? Pinned nodes stay.')) resetLayout()
-              }}
-            >
-              Relayout
-            </button>
-            <button className="nd-btn" style={{ padding: '6px 14px' }} onClick={() => setPresenting(true)}>
-              Present
-            </button>
-
-            {/* 匯出:PNG(點陣)/ SVG(向量)/ HTML(互動唯讀)*/}
-            <div className="relative">
-              <button
-                className="nd-btn nd-btn-primary"
-                style={{ padding: '6px 14px' }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setOpenMenu(openMenu === 'export' ? null : 'export')
-                }}
-              >
-                Export
-              </button>
-              {openMenu === 'export' && (
-                <div
-                  className="nd-card absolute right-0 top-full mt-2 w-52 p-1.5 z-50"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    className="nd-menu-item"
-                    onClick={() => {
-                      void exportPng()
-                      setOpenMenu(null)
-                    }}
-                  >
-                    PNG — bitmap 2x
-                  </button>
-                  <button
-                    className="nd-menu-item"
-                    onClick={() => {
-                      exportSvg()
-                      setOpenMenu(null)
-                    }}
-                  >
-                    SVG — vector
-                  </button>
-                  <button
-                    className="nd-menu-item"
-                    onClick={() => {
-                      exportHtml()
-                      setOpenMenu(null)
-                    }}
-                  >
-                    HTML — interactive
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
           </div>
         </Panel>
 
         {/* 圖例:儀表面板 */}
         <Panel position="bottom-left">
-          <div className="nd-card px-4 py-3" style={{ minWidth: 168 }}>
-            {(Object.keys(KIND_META) as NodeKind[])
-              .filter((k) => (counts.get(k) ?? 0) > 0)
-              .map((k) => (
-                <div key={k} className="flex items-center gap-2.5 py-[3px]">
-                  <LegendMarker kind={k} />
-                  <span className="nd-label" style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
-                    {KIND_META[k].label}
-                  </span>
-                  <span className="nd-mono ml-auto" style={{ fontSize: 11, color: 'var(--text-primary)' }}>
-                    {counts.get(k)}
-                  </span>
-                </div>
-              ))}
+          <div className="nd-card overflow-hidden" style={{ minWidth: 160 }}>
             <div
-              className="flex items-center gap-2.5 mt-2 pt-2"
-              style={{ borderTop: '1px solid var(--border)' }}
+              className="nd-label px-3 py-2"
+              style={{ fontSize: 9, color: 'var(--text-disabled)', borderBottom: '1px solid var(--border)' }}
             >
-              <span className="w-4 border-t border-dashed" style={{ borderColor: 'var(--accent)' }} />
-              <span className="nd-label" style={{ fontSize: 10, color: 'var(--accent)' }}>
-                Unresolved
-              </span>
+              Legend
+            </div>
+            <div className="px-3 py-2">
+              {(Object.keys(KIND_META) as NodeKind[])
+                .filter((k) => (counts.get(k) ?? 0) > 0)
+                .map((k) => (
+                  <div key={k} className="flex items-center gap-2.5 py-[3px]">
+                    <LegendMarker kind={k} />
+                    <span className="nd-label flex-1" style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
+                      {KIND_META[k].label}
+                    </span>
+                    <span
+                      className="nd-mono"
+                      style={{ fontSize: 13, color: 'var(--text-display)', fontWeight: 700 }}
+                    >
+                      {counts.get(k)}
+                    </span>
+                  </div>
+                ))}
+              <div
+                className="flex items-center gap-2.5 mt-1.5 pt-1.5"
+                style={{ borderTop: '1px solid var(--border)' }}
+              >
+                <span className="w-4 border-t border-dashed" style={{ borderColor: 'var(--accent)' }} />
+                <span className="nd-label flex-1" style={{ fontSize: 10, color: 'var(--accent)' }}>
+                  Unresolved
+                </span>
+              </div>
             </div>
           </div>
         </Panel>
       </ReactFlow>
 
-      {/* 簡報模式:唯一保留的 chrome,進度與離開提示 */}
+      {/* 簡報模式 HUD */}
       {presenting && (
         <div
-          className="nd-label fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
           style={{
             background: 'var(--surface)',
             border: '1px solid var(--border-visible)',
-            color: 'var(--text-secondary)',
-            padding: '9px 20px',
             borderRadius: 999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0,
+            overflow: 'hidden',
           }}
         >
           {walk ? (
             <>
-              <span style={{ color: 'var(--text-display)' }}>
+              <span
+                className="nd-mono"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: 'var(--text-display)',
+                  padding: '9px 16px',
+                  borderRight: '1px solid var(--border)',
+                  letterSpacing: '0.04em',
+                }}
+              >
                 {walk.step + 1} / {walk.ids.length}
               </span>
-              {'  —  ← → step · esc exit'}
+              <span
+                className="nd-label"
+                style={{ fontSize: 10, color: 'var(--text-secondary)', padding: '9px 16px' }}
+              >
+                ← → step · esc exit
+              </span>
             </>
           ) : (
-            'Click a node to walk its path — esc to exit'
+            <span
+              className="nd-label"
+              style={{ fontSize: 10, color: 'var(--text-secondary)', padding: '9px 20px' }}
+            >
+              Click a node to walk its path · esc to exit
+            </span>
           )}
         </div>
       )}
@@ -717,7 +770,6 @@ function CartoApp() {
         </div>
       )}
 
-      {/* 右鍵選單 */}
       {menu && <ContextMenu menu={menu} onClose={() => setMenu(null)} />}
     </div>
   )
@@ -751,8 +803,8 @@ function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () => void }
 
   return (
     <div
-      className="nd-card fixed p-1.5 w-52 z-50"
-      style={{ left: menu.x, top: menu.y }}
+      className="nd-card fixed overflow-hidden z-50"
+      style={{ left: menu.x, top: menu.y, width: 208 }}
       onClick={(e) => e.stopPropagation()}
     >
       <button
@@ -765,7 +817,10 @@ function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () => void }
       >
         Rename...
       </button>
-      <div className="flex items-center gap-2 px-3 py-2">
+      <div
+        className="flex items-center gap-2 px-3 py-2"
+        style={{ borderTop: '1px solid var(--border)' }}
+      >
         {COLOR_SWATCHES.map((c) => (
           <button
             key={c}
@@ -789,43 +844,45 @@ function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () => void }
           CLR
         </button>
       </div>
-      <button
-        className="nd-menu-item"
-        onClick={() => {
-          toggleNodeHidden(menu.nodeId)
-          onClose()
-        }}
-      >
-        {curation?.hidden ? 'Unhide' : 'Hide'}
-      </button>
-      <button
-        className="nd-menu-item"
-        onClick={() => {
-          togglePinned(menu.nodeId)
-          onClose()
-        }}
-      >
-        {curation?.pinned ? 'Unpin' : 'Pin'}
-      </button>
-      <button
-        className="nd-menu-item"
-        onClick={() => {
-          const name = prompt('Group name (empty = remove from group):', '')
-          if (name !== null) assignGroup(menu.nodeId, name.trim() || null)
-          onClose()
-        }}
-      >
-        Group...
-      </button>
-      <button
-        className="nd-menu-item"
-        onClick={() => {
-          startConnect(menu.nodeId)
-          onClose()
-        }}
-      >
-        Connect to...
-      </button>
+      <div style={{ borderTop: '1px solid var(--border)' }}>
+        <button
+          className="nd-menu-item"
+          onClick={() => {
+            toggleNodeHidden(menu.nodeId)
+            onClose()
+          }}
+        >
+          {curation?.hidden ? 'Unhide' : 'Hide'}
+        </button>
+        <button
+          className="nd-menu-item"
+          onClick={() => {
+            togglePinned(menu.nodeId)
+            onClose()
+          }}
+        >
+          {curation?.pinned ? 'Unpin' : 'Pin'}
+        </button>
+        <button
+          className="nd-menu-item"
+          onClick={() => {
+            const name = prompt('Group name (empty = remove from group):', '')
+            if (name !== null) assignGroup(menu.nodeId, name.trim() || null)
+            onClose()
+          }}
+        >
+          Group...
+        </button>
+        <button
+          className="nd-menu-item"
+          onClick={() => {
+            startConnect(menu.nodeId)
+            onClose()
+          }}
+        >
+          Connect to...
+        </button>
+      </div>
     </div>
   )
 }
