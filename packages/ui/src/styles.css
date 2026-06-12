@@ -318,6 +318,13 @@ body,
   overflow: hidden;
 }
 
+/* ——— 大圖 LOD:zoom 太遠時 9–10px 微型文字不可讀,停止繪製省 paint ———
+   visibility(非 display)保持盒模型,節點高度與 handle 位置不變 */
+[data-zoom-far] .nd-node-meta,
+[data-zoom-far] .nd-node-sub {
+  visibility: hidden;
+}
+
 /* ——— 簡報模式:隱藏所有 chrome,只留地圖與底部提示 ——— */
 [data-present] .react-flow__panel,
 [data-present] .react-flow__controls,

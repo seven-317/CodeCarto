@@ -50,7 +50,7 @@ export function CartoNode({ data, selected }: NodeProps<CartoFlowNode>) {
         )}
         <div className="px-2.5 py-1.5 min-w-0 flex-1">
           <div
-            className="nd-mono flex items-center gap-2 uppercase"
+            className="nd-mono nd-node-meta flex items-center gap-2 uppercase"
             style={{ fontSize: 9, letterSpacing: '0.08em', color: data.unresolved ? 'var(--accent)' : 'var(--text-secondary)' }}
           >
             <span>{KIND_META[data.kind].label}</span>
@@ -93,7 +93,7 @@ export function CartoNode({ data, selected }: NodeProps<CartoFlowNode>) {
             </div>
           )}
           {data.sub && !presenting && (
-            <div className="nd-mono truncate" style={{ fontSize: 10, color: 'var(--text-disabled)' }} title={data.sub}>
+            <div className="nd-mono nd-node-sub truncate" style={{ fontSize: 10, color: 'var(--text-disabled)' }} title={data.sub}>
               {data.sub}
             </div>
           )}
