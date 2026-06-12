@@ -60,7 +60,8 @@ node packages/cli/dist/cli.js map <某個 Next.js 專案>
 ## Roadmap
 
 - **M2 — 溝通力(已完成)**:簡報模式與路徑導覽、SVG / 自包含 HTML 匯出、NamedView、stale 策展清理與改名遷移
-- **M3 — 體驗與傳播**:3D 視圖、大圖虛擬化渲染、文件站與 demo 站
+- **M3 — 體驗與傳播(已完成)**:大圖虛擬化渲染(viewport culling + 低 zoom LOD、ELK 大圖降級)、[文件站與線上 demo](https://seven-317.github.io/CodeCarto/)(`site/`,GitHub Pages 自動部署)
+- 已捨棄:3D 視圖 — 中看不中用,2D + 策展 + 簡報模式已涵蓋溝通需求
 
 service 偵測規則表(`packages/analyzer/src/services.ts`)是絕佳的社群貢獻入口 — 歡迎 PR。
 
