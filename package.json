@@ -8,6 +8,7 @@
   "packageManager": "pnpm@10.30.3",
   "scripts": {
     "build": "turbo run build",
+    "build:site": "node site/build.mjs",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "dev": "turbo run dev"

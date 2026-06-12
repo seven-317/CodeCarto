@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "nodes": {
+    "page:/": {
+      "label": "首頁"
+    },
+    "src/components/UserList.tsx": {
+      "label": "會員清單"
+    },
+    "service:payments-stripe": {
+      "label": "金流(Stripe)"
+    },
+    "service:database-prisma": {
+      "label": "資料庫(Prisma)"
+    }
+  },
+  "groups": {},
+  "layout2d": {},
+  "annotations": [],
+  "views": [
+    {
+      "id": "view-demo-members",
+      "label": "會員資料流",
+      "nodeIds": [
+        "page:/",
+        "src/components/UserList.tsx",
+        "api:/api/users",
+        "api:/api/users/[id]",
+        "src/lib/db.ts",
+        "service:database-prisma"
+      ]
+    }
+  ]
+}
