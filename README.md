@@ -20,6 +20,10 @@ npx codecarto              # 掃描 + 開啟 localhost 地圖
 npx codecarto map --watch  # 監看原始碼,變更即時推送到瀏覽器
 npx codecarto scan --json  # 輸出 graph JSON 給腳本串接
 npx codecarto init         # 建立 codecarto.config.ts(完全可選)
+
+# 全域安裝後可用 cct 縮寫(cc 留給 Claude Code)
+npm i -g codecarto
+cct map --watch
 ```
 
 掃描在本機執行,server 只綁定 `127.0.0.1` 並驗證 Origin(DNS rebinding 防護);你的程式碼不會離開你的電腦。
