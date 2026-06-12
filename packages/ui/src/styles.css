@@ -269,6 +269,14 @@ body,
   overflow: hidden;
 }
 
+/* ——— 簡報模式:隱藏所有 chrome,只留地圖與底部提示 ——— */
+[data-present] .react-flow__panel,
+[data-present] .react-flow__controls,
+[data-present] .react-flow__minimap,
+[data-present] .react-flow__attribution {
+  display: none !important;
+}
+
 /* ——— RWD:窄螢幕讓地圖本體優先 ———
    minimap 與圖例是輔助儀表,手機上會蓋掉大半畫布,直接收起 */
 @media (max-width: 700px) {

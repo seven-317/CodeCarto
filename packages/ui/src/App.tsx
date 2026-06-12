@@ -15,10 +15,11 @@ import {
 import { toPng } from 'html-to-image'
 import type { NodeKind } from '@codecarto/shared'
 import { fetchGraph, fetchMap, subscribeGraph } from './api'
+import { buildSelfContainedHtml, downloadText, graphToSvg } from './export'
 import { computeAutoLayout, NODE_HEIGHT, NODE_WIDTH, type XY } from './layout'
-import { useCartoStore } from './store'
+import { chainOf, useCartoStore } from './store'
 import { PALETTES } from './theme'
-import { buildFlow, KIND_META, type CartoNodeData } from './flow/buildFlow'
+import { buildFlow, KIND_META, type CartoFlowNode, type CartoNodeData } from './flow/buildFlow'
 import { CartoNode } from './flow/CartoNode'
 
 const nodeTypes = { carto: CartoNode }
@@ -52,7 +53,19 @@ function CartoApp() {
     connectFrom,
     saveState,
     theme,
+    presenting,
+    walk,
+    viewNodeIds,
+    activeViewId,
     setTheme,
+    setPresenting,
+    startWalk,
+    stepWalk,
+    applyView,
+    saveView,
+    deleteView,
+    migrateCuration,
+    removeCuration,
     setGraph,
     setMap,
     setAutoPositions,
@@ -67,6 +80,7 @@ function CartoApp() {
 
   const [error, setError] = useState<string | null>(null)
   const [menu, setMenu] = useState<MenuState | null>(null)
+  const [openMenu, setOpenMenu] = useState<'views' | 'export' | 'stale' | null>(null)
   const [query, setQuery] = useState('')
   const flow = useReactFlow()
 
@@ -99,13 +113,24 @@ function CartoApp() {
     }
   }, [setGraph, setMap, setAutoPositions])
 
-  // Esc 取消手動連線 / 高亮
+  // Esc 逐層退出:導覽 → 簡報 → 連線/高亮/選單;方向鍵驅動路徑導覽
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      const s = useCartoStore.getState()
       if (e.key === 'Escape') {
-        startConnect(null)
-        select(null)
-        setMenu(null)
+        if (s.walk) s.endWalk()
+        else if (s.presenting) s.setPresenting(false)
+        else {
+          startConnect(null)
+          select(null)
+          setMenu(null)
+          setOpenMenu(null)
+        }
+        return
+      }
+      if (s.walk && (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === ' ')) {
+        e.preventDefault()
+        s.stepWalk(e.key === 'ArrowLeft' ? -1 : 1)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -117,12 +142,56 @@ function CartoApp() {
     [map.layout2d, autoPositions],
   )
 
+  // 路徑導覽:每一步把鏡頭平移到目前節點,像簡報翻頁
+  useEffect(() => {
+    const id = walk?.ids[walk.step]
+    if (!id) return
+    const pos = positionOf(id)
+    flow.setCenter(pos.x + NODE_WIDTH / 2, pos.y + NODE_HEIGHT / 2, { zoom: 1.15, duration: 500 })
+  }, [walk, positionOf, flow])
+
   const palette = PALETTES[theme]
 
   const { nodes, edges } = useMemo(() => {
     if (!graph) return { nodes: [], edges: [] }
-    return buildFlow({ graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds, theme })
-  }, [graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds, theme])
+    // 路徑導覽時高亮 = 已走過的前綴;一般點擊 = 完整鏈路
+    const effectiveHighlight = walk ? new Set(walk.ids.slice(0, walk.step + 1)) : highlightIds
+    return buildFlow({
+      graph,
+      map,
+      positionOf,
+      showExternal,
+      showHidden,
+      highlightIds: effectiveHighlight,
+      flashIds,
+      theme,
+      viewFilter: viewNodeIds,
+    })
+  }, [graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds, theme, walk, viewNodeIds])
+
+  // stale 策展:map 裡存在但 graph 已不存在的節點 id(檔案被改名/刪除)
+  const staleIds = useMemo(() => {
+    if (!graph) return []
+    const live = new Set(graph.nodes.map((n) => n.id))
+    return [...new Set([...Object.keys(map.nodes), ...Object.keys(map.layout2d)])].filter(
+      (id) => !live.has(id),
+    )
+  }, [graph, map.nodes, map.layout2d])
+
+  // 改名遷移建議:同 kind 前綴 + 同檔名尾段的新節點。
+  // file 節點的 id 是純相對路徑(無 kind: 前綴),前綴視為空字串。
+  const migrationTarget = useCallback(
+    (staleId: string): string | undefined => {
+      if (!graph) return undefined
+      const base = staleId.split('/').pop()
+      if (!base) return undefined
+      const kindOf = (id: string) => (/^[a-z]+:/.test(id) ? id.split(':')[0] : 'file')
+      return graph.nodes.find(
+        (n) => n.id !== staleId && kindOf(n.id) === kindOf(staleId) && n.id.split('/').pop() === base,
+      )?.id
+    },
+    [graph],
+  )
 
   const counts = useMemo(() => {
     const c = new Map<NodeKind, number>()
@@ -186,6 +255,27 @@ function CartoApp() {
     a.click()
   }
 
+  const exportSvg = () => downloadText('codecarto.svg', graphToSvg(nodes as CartoFlowNode[], edges, theme), 'image/svg+xml')
+
+  const exportHtml = () => {
+    const svg = graphToSvg(nodes as CartoFlowNode[], edges, theme)
+    const title = graph?.root.split('/').pop() ?? 'Architecture Map'
+    downloadText('codecarto.html', buildSelfContainedHtml({ svg, edges, title, theme }), 'text/html')
+  }
+
+  const saveCurrentView = () => {
+    const label = prompt('View name:')
+    if (!label?.trim()) return
+    // 有套用中的視圖或鏈路高亮就存那個子集,否則存全部(空陣列)
+    const nodeIds = viewNodeIds ? [...viewNodeIds] : highlightIds ? [...highlightIds] : []
+    saveView({
+      id: `view-${Date.now().toString(36)}`,
+      label: label.trim(),
+      nodeIds,
+      viewport: flow.getViewport(),
+    })
+  }
+
   if (error) {
     return (
       <div className="h-full flex flex-col items-center justify-center gap-3">
@@ -222,7 +312,14 @@ function CartoApp() {
   }
 
   return (
-    <div className="h-full" onClick={() => setMenu(null)}>
+    <div
+      className="h-full"
+      data-present={presenting || undefined}
+      onClick={() => {
+        setMenu(null)
+        setOpenMenu(null)
+      }}
+    >
       <ReactFlow<Node<CartoNodeData>, Edge>
         nodes={nodes as Node<CartoNodeData>[]}
         edges={edges}
@@ -233,7 +330,23 @@ function CartoApp() {
         nodesConnectable={false}
         zoomOnDoubleClick={false}
         onNodeDoubleClick={(_, node) => useCartoStore.getState().setEditing(node.id)}
-        onNodeClick={(_, node) => select(node.id)}
+        onNodeClick={(_, node) => {
+          // 簡報模式:點節點 = 選定鏈路開始導覽(依 x 座標排序,Page → Service)
+          if (presenting && graph) {
+            const chain = chainOf(graph, node.id)
+            const visibleIds = new Set(nodes.map((n) => n.id))
+            const ordered = [...chain]
+              .filter((id) => visibleIds.has(id))
+              .sort((a, b) => {
+                const pa = positionOf(a)
+                const pb = positionOf(b)
+                return pa.x - pb.x || pa.y - pb.y
+              })
+            startWalk(ordered)
+            return
+          }
+          select(node.id)
+        }}
         onPaneClick={() => {
           select(null)
           setMenu(null)
@@ -340,6 +453,137 @@ function CartoApp() {
             <button className="nd-chip" data-active={showHidden} onClick={() => setShowHidden(!showHidden)}>
               Hidden
             </button>
+
+            {/* stale 策展:graph 已不存在的 id,提供遷移或清除 */}
+            {staleIds.length > 0 && (
+              <div className="relative">
+                <button
+                  className="nd-chip"
+                  style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setOpenMenu(openMenu === 'stale' ? null : 'stale')
+                  }}
+                >
+                  Stale {staleIds.length}
+                </button>
+                {openMenu === 'stale' && (
+                  <div
+                    className="nd-card absolute right-0 top-full mt-2 w-80 p-1.5 z-50"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="nd-label px-3 py-2" style={{ fontSize: 9, color: 'var(--text-disabled)' }}>
+                      Curation without a matching node
+                    </div>
+                    {staleIds.map((id) => {
+                      const target = migrationTarget(id)
+                      return (
+                        <div key={id} className="px-3 py-2" style={{ borderTop: '1px solid var(--border)' }}>
+                          <div className="nd-mono truncate" style={{ fontSize: 10, color: 'var(--text-primary)' }} title={id}>
+                            {id}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            {target && (
+                              <button
+                                className="nd-chip"
+                                style={{ fontSize: 9 }}
+                                title={`Migrate curation to ${target}`}
+                                onClick={() => migrateCuration(id, target)}
+                              >
+                                → {target.split('/').pop()}
+                              </button>
+                            )}
+                            <button
+                              className="nd-chip ml-auto"
+                              style={{ fontSize: 9 }}
+                              onClick={() => removeCuration(id)}
+                            >
+                              Drop
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    <button
+                      className="nd-menu-item mt-1"
+                      style={{ color: 'var(--accent)' }}
+                      onClick={() => {
+                        staleIds.forEach((id) => removeCuration(id))
+                        setOpenMenu(null)
+                      }}
+                    >
+                      Drop all
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* NamedView */}
+            <div className="relative">
+              <button
+                className="nd-chip"
+                data-active={!!activeViewId || openMenu === 'views'}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setOpenMenu(openMenu === 'views' ? null : 'views')
+                }}
+              >
+                Views
+              </button>
+              {openMenu === 'views' && (
+                <div
+                  className="nd-card absolute right-0 top-full mt-2 w-64 p-1.5 z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    className="nd-menu-item"
+                    onClick={() => {
+                      saveCurrentView()
+                      setOpenMenu(null)
+                    }}
+                  >
+                    Save current...
+                  </button>
+                  <button
+                    className="nd-menu-item"
+                    style={!activeViewId ? { color: 'var(--text-display)' } : undefined}
+                    onClick={() => {
+                      applyView(null)
+                      flow.fitView({ duration: 400 })
+                      setOpenMenu(null)
+                    }}
+                  >
+                    Full map
+                  </button>
+                  {map.views.map((v) => (
+                    <div key={v.id} className="flex items-center">
+                      <button
+                        className="nd-menu-item flex-1 truncate"
+                        style={activeViewId === v.id ? { color: 'var(--text-display)' } : undefined}
+                        onClick={() => {
+                          applyView(v)
+                          if (v.viewport) flow.setViewport(v.viewport, { duration: 400 })
+                          else setTimeout(() => flow.fitView({ duration: 400 }), 50)
+                          setOpenMenu(null)
+                        }}
+                      >
+                        {v.label}
+                      </button>
+                      <button
+                        className="nd-mono px-2 cursor-pointer"
+                        style={{ fontSize: 10, color: 'var(--text-disabled)' }}
+                        title="Delete view"
+                        onClick={() => deleteView(v.id)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button
               className="nd-btn"
               style={{ padding: '6px 14px' }}
@@ -349,9 +593,57 @@ function CartoApp() {
             >
               Relayout
             </button>
-            <button className="nd-btn nd-btn-primary" style={{ padding: '6px 14px' }} onClick={exportPng}>
-              Export PNG
+            <button className="nd-btn" style={{ padding: '6px 14px' }} onClick={() => setPresenting(true)}>
+              Present
             </button>
+
+            {/* 匯出:PNG(點陣)/ SVG(向量)/ HTML(互動唯讀)*/}
+            <div className="relative">
+              <button
+                className="nd-btn nd-btn-primary"
+                style={{ padding: '6px 14px' }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setOpenMenu(openMenu === 'export' ? null : 'export')
+                }}
+              >
+                Export
+              </button>
+              {openMenu === 'export' && (
+                <div
+                  className="nd-card absolute right-0 top-full mt-2 w-52 p-1.5 z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    className="nd-menu-item"
+                    onClick={() => {
+                      void exportPng()
+                      setOpenMenu(null)
+                    }}
+                  >
+                    PNG — bitmap 2x
+                  </button>
+                  <button
+                    className="nd-menu-item"
+                    onClick={() => {
+                      exportSvg()
+                      setOpenMenu(null)
+                    }}
+                  >
+                    SVG — vector
+                  </button>
+                  <button
+                    className="nd-menu-item"
+                    onClick={() => {
+                      exportHtml()
+                      setOpenMenu(null)
+                    }}
+                  >
+                    HTML — interactive
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           </div>
         </Panel>
@@ -384,6 +676,31 @@ function CartoApp() {
           </div>
         </Panel>
       </ReactFlow>
+
+      {/* 簡報模式:唯一保留的 chrome,進度與離開提示 */}
+      {presenting && (
+        <div
+          className="nd-label fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border-visible)',
+            color: 'var(--text-secondary)',
+            padding: '9px 20px',
+            borderRadius: 999,
+          }}
+        >
+          {walk ? (
+            <>
+              <span style={{ color: 'var(--text-display)' }}>
+                {walk.step + 1} / {walk.ids.length}
+              </span>
+              {'  —  ← → step · esc exit'}
+            </>
+          ) : (
+            'Click a node to walk its path — esc to exit'
+          )}
+        </div>
+      )}
 
       {/* 手動連線提示 */}
       {connectFrom && (

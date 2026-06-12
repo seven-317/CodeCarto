@@ -49,6 +49,8 @@ interface BuildParams {
   highlightIds: Set<string> | null
   flashIds: Set<string>
   theme: Theme
+  /** NamedView 過濾:非 null 時只顯示集合內的節點 */
+  viewFilter: Set<string> | null
 }
 
 const ARROW = (color: string) => ({
@@ -60,7 +62,8 @@ const ARROW = (color: string) => ({
 
 /** ScanGraph + 策展 map → React Flow 的 nodes/edges */
 export function buildFlow(params: BuildParams): { nodes: CartoFlowNode[]; edges: Edge[] } {
-  const { graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds, theme } = params
+  const { graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds, theme, viewFilter } =
+    params
   const palette = PALETTES[theme]
 
   const visible = new Set<string>()
@@ -68,6 +71,7 @@ export function buildFlow(params: BuildParams): { nodes: CartoFlowNode[]; edges:
 
   for (const n of graph.nodes) {
     const curation = map.nodes[n.id]
+    if (viewFilter && !viewFilter.has(n.id)) continue
     if (curation?.hidden && !showHidden) continue
     if (n.kind === 'external' && n.id !== UNRESOLVED_NODE_ID && !showExternal) continue
     visible.add(n.id)
