@@ -160,6 +160,16 @@ body,
   border-left: 2px solid var(--accent);
 }
 
+/* 工具列:單行橫向捲動,捲軸隱形 */
+.nd-toolbar {
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none; /* Firefox */
+}
+.nd-toolbar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
 /* toolbar vertical divider */
 .carto-divider {
   width: 1px;

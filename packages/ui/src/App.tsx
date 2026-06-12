@@ -363,7 +363,7 @@ function CartoApp() {
         {/* 工具列:單一卡片,內部 pipe 分隔 */}
         <Panel position="top-left" style={{ width: 'calc(100% - 30px)', pointerEvents: 'none' }}>
           <div
-            className="nd-card flex items-stretch overflow-visible w-full"
+            className="nd-card flex items-stretch w-full nd-toolbar"
             style={{ pointerEvents: 'auto', height: 44 }}
           >
             {/* 品牌名稱 — dot-matrix 顯示字體,全畫面唯一的 display moment */}
