@@ -269,6 +269,15 @@ body,
   overflow: hidden;
 }
 
+/* ——— RWD:窄螢幕讓地圖本體優先 ———
+   minimap 與圖例是輔助儀表,手機上會蓋掉大半畫布,直接收起 */
+@media (max-width: 700px) {
+  .react-flow__minimap,
+  .react-flow__panel.bottom.left {
+    display: none;
+  }
+}
+
 .react-flow__attribution {
   background: transparent;
   color: var(--text-disabled);

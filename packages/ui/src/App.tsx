@@ -242,9 +242,11 @@ function CartoApp() {
           style={{ background: palette.surface }}
         />
 
-        {/* 工具列(tertiary:推到邊緣,mono caps)*/}
-        <Panel position="top-left">
-          <div className="nd-card flex items-center gap-5 px-4 py-2.5">
+        {/* 工具列(tertiary:推到邊緣,mono caps)。
+            單一全寬 panel + flex-wrap:窄螢幕兩張卡換行堆疊,而非絕對定位互相重疊 */}
+        <Panel position="top-left" style={{ width: 'calc(100% - 30px)', pointerEvents: 'none' }}>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="nd-card flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-2.5" style={{ pointerEvents: 'auto' }}>
             <span
               className="nd-mono font-bold uppercase"
               style={{ fontSize: 12, letterSpacing: '0.14em', color: 'var(--text-display)' }}
@@ -253,7 +255,7 @@ function CartoApp() {
             </span>
             <div className="relative">
               <input
-                className="nd-input w-60"
+                className="nd-input w-36 md:w-60"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -262,7 +264,10 @@ function CartoApp() {
                 placeholder="Search"
               />
               {matches.length > 0 && (
-                <div className="nd-card absolute top-full mt-2 w-72 overflow-hidden z-50" style={{ borderRadius: 8 }}>
+                <div
+                  className="nd-card absolute top-full mt-2 w-72 max-w-[80vw] overflow-hidden z-50"
+                  style={{ borderRadius: 8 }}
+                >
                   {matches.map((m) => (
                     <button
                       key={m.id}
@@ -298,11 +303,9 @@ function CartoApp() {
               {saveState === 'error' ? '[ERROR]' : saveState === 'saving' ? '[SAVING...]' : '[SAVED]'}
             </span>
           </div>
-        </Panel>
 
-        {/* 視圖選項 */}
-        <Panel position="top-right">
-          <div className="nd-card flex items-center gap-2.5 px-3 py-2">
+          {/* 視圖選項 */}
+          <div className="nd-card flex flex-wrap items-center gap-2.5 px-3 py-2" style={{ pointerEvents: 'auto' }}>
             <div className="nd-seg">
               <button data-active={theme === 'light'} onClick={() => setTheme('light')}>
                 Light
@@ -329,6 +332,7 @@ function CartoApp() {
             <button className="nd-btn nd-btn-primary" style={{ padding: '6px 14px' }} onClick={exportPng}>
               Export PNG
             </button>
+          </div>
           </div>
         </Panel>
 
