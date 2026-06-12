@@ -363,86 +363,86 @@ function CartoApp() {
         {/* 工具列:單一卡片,內部 pipe 分隔 */}
         <Panel position="top-left" style={{ width: 'calc(100% - 30px)', pointerEvents: 'none' }}>
           <div
-            className="nd-card flex items-stretch w-full nd-toolbar"
-            style={{ pointerEvents: 'auto', height: 44 }}
+            className="nd-card flex flex-wrap items-stretch w-full"
+            style={{ pointerEvents: 'auto' }}
           >
-            {/* 品牌名稱 — dot-matrix 顯示字體,全畫面唯一的 display moment */}
-            <div
-              className="px-4 flex items-center shrink-0"
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 17,
-                letterSpacing: '0.08em',
-                color: 'var(--text-display)',
-                borderRight: '1px solid var(--border)',
-              }}
-            >
-              CODECARTO
-            </div>
-
-            {/* 搜尋 */}
-            <div
-              className="flex items-center px-3 relative"
-              style={{ borderRight: '1px solid var(--border)' }}
-            >
-              <input
-                className="nd-input w-32 sm:w-52"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && matches[0]) flyTo(matches[0].id)
-                }}
-                placeholder="Search"
-              />
-              {matches.length > 0 && (
-                <div
-                  className="nd-card absolute top-full left-0 mt-1 w-72 max-w-[80vw] overflow-hidden z-50"
-                  style={{ borderRadius: 8 }}
-                >
-                  {matches.map((m) => (
-                    <button
-                      key={m.id}
-                      className="flex items-baseline gap-3 w-full text-left px-3 py-2 hover:bg-[var(--surface-raised)]"
-                      onClick={() => flyTo(m.id)}
-                    >
-                      <span
-                        className="nd-mono uppercase shrink-0 w-14"
-                        style={{ fontSize: 9, letterSpacing: '0.08em', color: 'var(--text-disabled)' }}
-                      >
-                        {KIND_META[m.kind].label}
-                      </span>
-                      <span className="truncate" style={{ fontSize: 13, color: 'var(--text-primary)' }}>
-                        {map.nodes[m.id]?.label ?? m.label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* 儲存狀態 */}
-            <div className="flex items-center px-3" style={{ borderRight: '1px solid var(--border)' }}>
-              <span
-                className="nd-label"
+            {/* 左區:品牌 + 搜尋 + 儲存狀態 */}
+            <div className="nd-toolbar-left">
+              {/* 品牌名稱 — dot-matrix 顯示字體,全畫面唯一的 display moment */}
+              <div
+                className="px-4 flex items-center shrink-0"
                 style={{
-                  fontSize: 10,
-                  color:
-                    saveState === 'error'
-                      ? 'var(--accent)'
-                      : saveState === 'saving'
-                        ? 'var(--warning)'
-                        : 'var(--text-disabled)',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 17,
+                  letterSpacing: '0.08em',
+                  color: 'var(--text-display)',
+                  borderRight: '1px solid var(--border)',
                 }}
               >
-                {saveState === 'error' ? '[ERROR]' : saveState === 'saving' ? '[SAVING...]' : '[SAVED]'}
-              </span>
+                CODECARTO
+              </div>
+
+              {/* 搜尋 */}
+              <div
+                className="flex items-center px-3 relative flex-1 min-w-0"
+                style={{ borderRight: '1px solid var(--border)' }}
+              >
+                <input
+                  className="nd-input w-full"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && matches[0]) flyTo(matches[0].id)
+                  }}
+                  placeholder="Search"
+                />
+                {matches.length > 0 && (
+                  <div
+                    className="nd-card absolute top-full left-0 mt-1 w-72 max-w-[80vw] overflow-hidden z-50"
+                    style={{ borderRadius: 8 }}
+                  >
+                    {matches.map((m) => (
+                      <button
+                        key={m.id}
+                        className="flex items-baseline gap-3 w-full text-left px-3 py-2 hover:bg-[var(--surface-raised)]"
+                        onClick={() => flyTo(m.id)}
+                      >
+                        <span
+                          className="nd-mono uppercase shrink-0 w-14"
+                          style={{ fontSize: 9, letterSpacing: '0.08em', color: 'var(--text-disabled)' }}
+                        >
+                          {KIND_META[m.kind].label}
+                        </span>
+                        <span className="truncate" style={{ fontSize: 13, color: 'var(--text-primary)' }}>
+                          {map.nodes[m.id]?.label ?? m.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 儲存狀態 */}
+              <div className="flex items-center px-3 shrink-0">
+                <span
+                  className="nd-label"
+                  style={{
+                    fontSize: 10,
+                    color:
+                      saveState === 'error'
+                        ? 'var(--accent)'
+                        : saveState === 'saving'
+                          ? 'var(--warning)'
+                          : 'var(--text-disabled)',
+                  }}
+                >
+                  {saveState === 'error' ? '[ERROR]' : saveState === 'saving' ? '[SAVING...]' : '[SAVED]'}
+                </span>
+              </div>
             </div>
 
-            {/* 推到右側 */}
-            <div className="flex-1" />
-
-            {/* 右側控制群 */}
-            <div className="flex items-center gap-2 px-3">
+            {/* 右區:所有控制(桌面版同行右側,手機版換到第二排) */}
+            <div className="nd-toolbar-right">
               {/* 主題切換 */}
               <div className="nd-seg shrink-0">
                 <button data-active={theme === 'light'} onClick={() => setTheme('light')}>

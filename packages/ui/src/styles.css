@@ -160,22 +160,47 @@ body,
   border-left: 2px solid var(--accent);
 }
 
-/* 工具列:單行橫向捲動,捲軸隱形 */
-.nd-toolbar {
-  overflow-x: auto;
-  overflow-y: visible;
-  scrollbar-width: none; /* Firefox */
-}
-.nd-toolbar::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+/* 工具列左區(品牌+搜尋+儲存狀態) */
+.nd-toolbar-left {
+  display: flex;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
 }
 
-/* toolbar vertical divider */
+/* 工具列右區(控制群) */
+.nd-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+/* 手機版:右區換到第二排 */
+@media (max-width: 700px) {
+  .nd-toolbar-right {
+    width: 100%;
+    height: auto;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+}
+
+/* toolbar vertical divider — 手機版隱藏,避免換行後出現孤立豎線 */
 .carto-divider {
   width: 1px;
   height: 20px;
   background: var(--border);
   flex-shrink: 0;
+}
+@media (max-width: 700px) {
+  .carto-divider {
+    display: none;
+  }
 }
 
 .nd-input {
