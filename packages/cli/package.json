@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "codecarto": "./dist/cli.js"
+    "codecarto": "./dist/cli.js",
+    "cct": "./dist/cli.js"
   },
   "exports": {
     ".": {

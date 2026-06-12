@@ -325,6 +325,12 @@ body,
   visibility: hidden;
 }
 
+/* 封包動畫點:大圖低 zoom(太小看不見,省數百個 SMIL)與 PNG 匯出時關閉 */
+[data-zoom-far] .carto-packet,
+[data-exporting] .carto-packet {
+  display: none;
+}
+
 /* ——— 簡報模式:隱藏所有 chrome,只留地圖與底部提示 ——— */
 [data-present] .react-flow__panel,
 [data-present] .react-flow__controls,

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  applyNodeChanges,
   Background,
   BackgroundVariant,
   Controls,
@@ -10,7 +11,7 @@ import {
   ReactFlowProvider,
   useReactFlow,
   type Edge,
-  type Node,
+  type NodeChange,
 } from '@xyflow/react'
 import { toPng } from 'html-to-image'
 import type { NodeKind } from '@codecarto/shared'
@@ -20,9 +21,11 @@ import { computeAutoLayout, NODE_HEIGHT, NODE_WIDTH, type XY } from './layout'
 import { chainOf, useCartoStore } from './store'
 import { PALETTES } from './theme'
 import { buildFlow, KIND_META, type CartoFlowNode, type CartoNodeData } from './flow/buildFlow'
+import { CartoEdge } from './flow/CartoEdge'
 import { CartoNode } from './flow/CartoNode'
 
 const nodeTypes = { carto: CartoNode }
+const edgeTypes = { carto: CartoEdge }
 
 /** 策展色盤:墨、灰 + 三個狀態色。色彩是事件,不是預設。 */
 const COLOR_SWATCHES = ['#000000', '#666666', '#d71921', '#4a9e5c', '#d4a843']
@@ -157,8 +160,8 @@ function CartoApp() {
 
   const palette = PALETTES[theme]
 
-  const { nodes, edges } = useMemo(() => {
-    if (!graph) return { nodes: [], edges: [] }
+  const { nodes: builtNodes, edges } = useMemo(() => {
+    if (!graph) return { nodes: [] as CartoFlowNode[], edges: [] as Edge[] }
     const effectiveHighlight = walk ? new Set(walk.ids.slice(0, walk.step + 1)) : highlightIds
     return buildFlow({
       graph,
@@ -172,6 +175,15 @@ function CartoApp() {
       viewFilter: viewNodeIds,
     })
   }, [graph, map, positionOf, showExternal, showHidden, highlightIds, flashIds, theme, walk, viewNodeIds])
+
+  // 受控 nodes:拖曳中的位置變更即時回寫 state,節點跟著滑鼠走;
+  // 放開時 onNodeDragStop 才寫進 map,builtNodes 重建後同步回來(座標相同,無跳動)
+  const [nodes, setNodes] = useState<CartoFlowNode[]>([])
+  useEffect(() => setNodes(builtNodes), [builtNodes])
+  const onNodesChange = useCallback(
+    (changes: NodeChange<CartoFlowNode>[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    [],
+  )
 
   const staleIds = useMemo(() => {
     if (!graph) return []
@@ -230,11 +242,9 @@ function CartoApp() {
     if (!el) return
     const ns = flow.getNodes()
     if (ns.length === 0) return
-    // culling 下畫面外節點不在 DOM;暫停 culling 並等一輪渲染再截
-    if (bigGraph) {
-      setExporting(true)
-      await new Promise((r) => setTimeout(r, 150))
-    }
+    // 匯出中:關閉封包動畫點;大圖另外暫停 culling 讓畫面外節點掛回 DOM
+    setExporting(true)
+    await new Promise((r) => setTimeout(r, bigGraph ? 150 : 50))
     const minX = Math.min(...ns.map((n) => n.position.x))
     const minY = Math.min(...ns.map((n) => n.position.y))
     const maxX = Math.max(...ns.map((n) => n.position.x + (n.measured?.width ?? NODE_WIDTH)))
@@ -261,7 +271,7 @@ function CartoApp() {
       a.download = 'codecarto.png'
       a.click()
     } finally {
-      if (bigGraph) setExporting(false)
+      setExporting(false)
     }
   }
 
@@ -324,15 +334,18 @@ function CartoApp() {
       className="h-full"
       data-present={presenting || undefined}
       data-zoom-far={(bigGraph && farZoom && !exporting) || undefined}
+      data-exporting={exporting || undefined}
       onClick={() => {
         setMenu(null)
         setOpenMenu(null)
       }}
     >
-      <ReactFlow<Node<CartoNodeData>, Edge>
-        nodes={nodes as Node<CartoNodeData>[]}
+      <ReactFlow<CartoFlowNode, Edge>
+        nodes={nodes}
         edges={edges}
+        onNodesChange={onNodesChange}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         minZoom={0.05}
         deleteKeyCode={['Backspace', 'Delete']}
