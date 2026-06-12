@@ -14,7 +14,7 @@ import {
 } from '@xyflow/react'
 import { toPng } from 'html-to-image'
 import type { NodeKind } from '@codecarto/shared'
-import { fetchGraph, fetchMap, subscribeGraph } from './api'
+import { fetchGraph, fetchMap, IS_DEMO, subscribeGraph } from './api'
 import { buildSelfContainedHtml, downloadText, graphToSvg } from './export'
 import { computeAutoLayout, NODE_HEIGHT, NODE_WIDTH, type XY } from './layout'
 import { chainOf, useCartoStore } from './store'
@@ -26,6 +26,11 @@ const nodeTypes = { carto: CartoNode }
 
 /** 策展色盤:墨、灰 + 三個狀態色。色彩是事件,不是預設。 */
 const COLOR_SWATCHES = ['#000000', '#666666', '#d71921', '#4a9e5c', '#d4a843']
+
+/** 節點數超過此值啟用 viewport culling 與低 zoom LOD */
+const VIRTUALIZE_AT = 150
+/** zoom 低於此值時 9–10px 微型文字已不可讀,直接停止繪製 */
+const LOD_ZOOM = 0.45
 
 interface MenuState {
   x: number
@@ -82,6 +87,10 @@ function CartoApp() {
   const [menu, setMenu] = useState<MenuState | null>(null)
   const [openMenu, setOpenMenu] = useState<'views' | 'export' | 'stale' | null>(null)
   const [query, setQuery] = useState('')
+  /** 低 zoom LOD:微型文字停止繪製(只在大圖時啟用) */
+  const [farZoom, setFarZoom] = useState(false)
+  /** PNG 匯出中:暫停 culling,讓畫面外節點也掛回 DOM */
+  const [exporting, setExporting] = useState(false)
   const flow = useReactFlow()
 
   useEffect(() => {
@@ -185,6 +194,9 @@ function CartoApp() {
     [graph],
   )
 
+  // 大圖虛擬化:culling 與 LOD 都只在超過門檻時啟用,小圖維持零成本
+  const bigGraph = nodes.length > VIRTUALIZE_AT
+
   const counts = useMemo(() => {
     const c = new Map<NodeKind, number>()
     for (const n of graph?.nodes ?? []) c.set(n.kind, (c.get(n.kind) ?? 0) + 1)
@@ -218,6 +230,11 @@ function CartoApp() {
     if (!el) return
     const ns = flow.getNodes()
     if (ns.length === 0) return
+    // culling 下畫面外節點不在 DOM;暫停 culling 並等一輪渲染再截
+    if (bigGraph) {
+      setExporting(true)
+      await new Promise((r) => setTimeout(r, 150))
+    }
     const minX = Math.min(...ns.map((n) => n.position.x))
     const minY = Math.min(...ns.map((n) => n.position.y))
     const maxX = Math.max(...ns.map((n) => n.position.x + (n.measured?.width ?? NODE_WIDTH)))
@@ -227,21 +244,25 @@ function CartoApp() {
     const width = Math.ceil(bounds.width) + PADDING * 2
     const height = Math.ceil(bounds.height) + PADDING * 2
     const viewport = getViewportForBounds(bounds, width, height, 1, 1, 0)
-    const dataUrl = await toPng(el, {
-      pixelRatio: 2,
-      backgroundColor: palette.page,
-      width,
-      height,
-      style: {
-        width: `${width}px`,
-        height: `${height}px`,
-        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-      },
-    })
-    const a = document.createElement('a')
-    a.href = dataUrl
-    a.download = 'codecarto.png'
-    a.click()
+    try {
+      const dataUrl = await toPng(el, {
+        pixelRatio: 2,
+        backgroundColor: palette.page,
+        width,
+        height,
+        style: {
+          width: `${width}px`,
+          height: `${height}px`,
+          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+        },
+      })
+      const a = document.createElement('a')
+      a.href = dataUrl
+      a.download = 'codecarto.png'
+      a.click()
+    } finally {
+      if (bigGraph) setExporting(false)
+    }
   }
 
   const exportSvg = () => downloadText('codecarto.svg', graphToSvg(nodes as CartoFlowNode[], edges, theme), 'image/svg+xml')
@@ -302,6 +323,7 @@ function CartoApp() {
     <div
       className="h-full"
       data-present={presenting || undefined}
+      data-zoom-far={(bigGraph && farZoom && !exporting) || undefined}
       onClick={() => {
         setMenu(null)
         setOpenMenu(null)
@@ -316,6 +338,11 @@ function CartoApp() {
         deleteKeyCode={['Backspace', 'Delete']}
         nodesConnectable={false}
         zoomOnDoubleClick={false}
+        onlyRenderVisibleElements={bigGraph && !exporting}
+        onMove={(_, vp) => {
+          const far = vp.zoom < LOD_ZOOM
+          if (far !== farZoom) setFarZoom(far)
+        }}
         onNodeDoubleClick={(_, node) => useCartoStore.getState().setEditing(node.id)}
         onNodeClick={(_, node) => {
           if (presenting && graph) {
@@ -436,7 +463,13 @@ function CartoApp() {
                           : 'var(--text-disabled)',
                   }}
                 >
-                  {saveState === 'error' ? '[ERROR]' : saveState === 'saving' ? '[SAVING...]' : '[SAVED]'}
+                  {IS_DEMO
+                    ? '[DEMO]'
+                    : saveState === 'error'
+                      ? '[ERROR]'
+                      : saveState === 'saving'
+                        ? '[SAVING...]'
+                        : '[SAVED]'}
                 </span>
               </div>
             </div>
