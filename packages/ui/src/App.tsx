@@ -3,6 +3,7 @@ import {
   Background,
   BackgroundVariant,
   Controls,
+  getViewportForBounds,
   MiniMap,
   Panel,
   ReactFlow,
@@ -152,13 +153,32 @@ function CartoApp() {
   }
 
   const exportPng = async () => {
-    const el = document.querySelector('.react-flow') as HTMLElement | null
+    // 只拍 viewport 圖層(節點+連線),對它套「框住全圖」的 transform,
+    // 與當前畫面的縮放/平移無關 — 輸出永遠是完整地圖
+    const el = document.querySelector('.react-flow__viewport') as HTMLElement | null
     if (!el) return
+    // 手動算邊界:getNodesBounds 在節點缺 measured 尺寸時會當成 0,導致右/下緣被裁
+    const ns = flow.getNodes()
+    if (ns.length === 0) return
+    const minX = Math.min(...ns.map((n) => n.position.x))
+    const minY = Math.min(...ns.map((n) => n.position.y))
+    const maxX = Math.max(...ns.map((n) => n.position.x + (n.measured?.width ?? NODE_WIDTH)))
+    const maxY = Math.max(...ns.map((n) => n.position.y + (n.measured?.height ?? NODE_HEIGHT)))
+    const bounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+    const PADDING = 48
+    const width = Math.ceil(bounds.width) + PADDING * 2
+    const height = Math.ceil(bounds.height) + PADDING * 2
+    const viewport = getViewportForBounds(bounds, width, height, 1, 1, 0)
     const dataUrl = await toPng(el, {
       pixelRatio: 2,
       backgroundColor: palette.page,
-      filter: (node) =>
-        !(node instanceof HTMLElement && node.classList.contains('react-flow__panel')),
+      width,
+      height,
+      style: {
+        width: `${width}px`,
+        height: `${height}px`,
+        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+      },
     })
     const a = document.createElement('a')
     a.href = dataUrl
