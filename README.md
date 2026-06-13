@@ -1,6 +1,6 @@
 # codecarto
 
-> An interactive architecture map generated from your code, curated by hand, and built to be presented to non-technical people.
+> An architecture map drawn straight from your code — tidy it up by hand, then take it to people who don't read code.
 
 **[English](README.md) · [繁體中文](README.zh-tw.md)**
 
@@ -8,7 +8,7 @@
 npx codecarto
 ```
 
-Engineers constantly have to explain how a system is wired to people who don't read code — clients, PMs, managers. Hand-drawn architecture diagrams go stale within three months; auto-generated dependency graphs are a 300-node hairball nobody can read. codecarto sits between the two with a three-layer model:
+Engineers keep having to explain how a system is wired to people who don't read code — clients, PMs, managers. Hand-drawn diagrams go stale in three months; auto-generated dependency graphs are a 300-node hairball nobody can read. codecarto sits right in between, with a three-layer model:
 
 1. **Automatic analysis** — ts-morph scans `import` / `export` / dynamic `import`, plus a Next.js semantic layer: Pages, API routes (with HTTP methods), `fetch('/api/…')` wiring, service nodes (Prisma, Stripe, …), and `'use client'` boundaries. Always in sync with the code.
 2. **Human curation** — rename into business language ("Member login"), color, group, hide, pin, draw manual edges. Curation lives in `codecarto.map.json` (commit it) and is re-applied by **stable node IDs** after every rescan, so renaming a file never loses your work.
