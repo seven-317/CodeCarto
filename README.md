@@ -1,6 +1,6 @@
 # codecarto
 
-> An interactive architecture map generated from your code, curated by hand, and built to be presented to non-technical people.
+> An interactive architecture map generated from your code — curated by hand, ready to present to non-technical people.
 
 **[English](README.md) · [繁體中文](README.zh-tw.md)**
 

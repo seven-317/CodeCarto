@@ -6,7 +6,7 @@
     "demo": "Demo"
   },
   "hero": {
-    "tagline": "An interactive architecture map generated from your code, curated by hand, and built to be presented to non-technical people. Hand-drawn diagrams go stale in three months; auto-generated dependency graphs are a 300-node hairball. codecarto is neither.",
+    "tagline": "An interactive architecture map generated from your code — curated by hand, and ready to present to non-technical people. Hand-drawn diagrams go stale in three months; auto-generated dependency graphs are a 300-node hairball. codecarto is neither.",
     "ctaDemo": "[ Live Demo ]",
     "ctaDocs": "[ Read the Docs ]",
     "ctaGithub": "[ GitHub ]"
