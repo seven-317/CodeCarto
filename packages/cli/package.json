@@ -1,7 +1,7 @@
 {
   "name": "codecarto",
-  "version": "0.1.0",
-  "description": "從程式碼自動生成、可人工策展、可向非技術人員簡報的互動式架構地圖",
+  "version": "0.1.1",
+  "description": "Auto-generated, always in sync architecture maps for TypeScript projects — built for client presentations, not just developers.",
   "license": "MIT",
   "type": "module",
   "homepage": "https://github.com/seven-317/CodeCarto#readme",
@@ -28,6 +28,7 @@
   "keywords": ["architecture", "diagram", "nextjs", "visualization", "dependency-graph"],
   "scripts": {
     "build": "tsup && node scripts/copy-ui.mjs",
+    "prepack": "node scripts/sync-readme.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -10,3 +10,6 @@ site/public/demo/
 .DS_Store
 coverage/
 .claude/
+
+# generated at pack time from root README.md
+packages/cli/README.md

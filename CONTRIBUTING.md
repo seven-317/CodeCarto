@@ -1,10 +1,12 @@
 # Contributing to codecarto
 
-感謝你的興趣!
+**[English](CONTRIBUTING.md) · [繁體中文](CONTRIBUTING.zh-tw.md)**
 
-## 開發環境
+Thanks for your interest!
 
-Node >= 20、pnpm 10。
+## Development setup
+
+Node >= 20, pnpm 10.
 
 ```bash
 pnpm install
@@ -12,20 +14,20 @@ pnpm build
 pnpm test
 ```
 
-## 最容易上手的貢獻:service 偵測規則
+## Easiest way to contribute: service detection rules
 
-`packages/analyzer/src/services.ts` 的 `BUILTIN_SERVICE_RULES` 是一張純資料的規則表 —
-新增一條規則(例如 `@upstash/qstash` → Queue)只要一行,加一個 fixture 測試即可。
-這類 PR 我們會優先 review,也是 `good-first-issue` 的主要來源。
+`BUILTIN_SERVICE_RULES` in `packages/analyzer/src/services.ts` is a pure data table —
+adding a rule (e.g. `@upstash/qstash` → Queue) is a single line plus a fixture test.
+These PRs get priority review and are the main source of `good-first-issue`s.
 
-## 測試
+## Testing
 
-- analyzer 的行為以 fixture 專案驗證:`packages/analyzer/test/fixtures/next-app/`。
-  新增解析能力時請同步擴充 fixture 與 `test/scan.test.ts`。
-- server 的 API 行為:`packages/server/test/server.test.ts`。
+- Analyzer behavior is verified against a fixture project: `packages/analyzer/test/fixtures/next-app/`.
+  When you add parsing capabilities, extend both the fixture and `test/scan.test.ts`.
+- Server API behavior: `packages/server/test/server.test.ts`.
 
-## PR 原則
+## PR guidelines
 
-- 一個 PR 做一件事
-- `pnpm build && pnpm typecheck && pnpm test` 全綠
-- UI 變更附截圖
+- One PR, one thing.
+- `pnpm build && pnpm typecheck && pnpm test` all green.
+- Include a screenshot for UI changes.
