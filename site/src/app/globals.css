@@ -222,6 +222,49 @@ header {
   color: var(--text-display);
 }
 
+/* ——— 首次進站遮罩 ——— */
+.intro-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--page);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(0);
+  /* 由下往上捲開:percussive ease-out,無回彈 */
+  transition: transform 850ms var(--ease);
+  will-change: transform;
+}
+.intro-mask[data-lift] {
+  transform: translateY(-100%);
+}
+.intro-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 0 32px;
+}
+.intro-lead {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.intro-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(48px, 11vw, 112px);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--text-display);
+}
+.intro-dot {
+  color: var(--accent);
+}
+
 /* ——— Hero ——— */
 .hero {
   padding-top: 128px;
