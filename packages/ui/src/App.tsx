@@ -90,6 +90,8 @@ function CartoApp() {
   const [menu, setMenu] = useState<MenuState | null>(null)
   const [openMenu, setOpenMenu] = useState<'views' | 'export' | 'stale' | null>(null)
   const [query, setQuery] = useState('')
+  // 小螢幕:控制群預設收起,只留 brand+search+toggle 一排
+  const [toolsOpen, setToolsOpen] = useState(false)
   /** 低 zoom LOD:微型文字停止繪製(只在大圖時啟用) */
   const [farZoom, setFarZoom] = useState(false)
   /** PNG 匯出中:暫停 culling,讓畫面外節點也掛回 DOM */
@@ -462,8 +464,8 @@ function CartoApp() {
                 )}
               </div>
 
-              {/* 儲存狀態 */}
-              <div className="flex items-center px-3 shrink-0">
+              {/* 儲存狀態(小螢幕隱藏以省空間) */}
+              <div className="nd-saved flex items-center px-3 shrink-0">
                 <span
                   className="nd-label"
                   style={{
@@ -485,10 +487,23 @@ function CartoApp() {
                         : '[SAVED]'}
                 </span>
               </div>
+
+              {/* 小螢幕收合鈕:只在窄寬度出現(CSS 控制),內嵌左區末端保持同排 */}
+              <button
+                className="nd-tools-toggle"
+                aria-label="Toggle controls"
+                aria-expanded={toolsOpen}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setToolsOpen((v) => !v)
+                }}
+              >
+                {toolsOpen ? '✕' : '≡'}
+              </button>
             </div>
 
-            {/* 右區:所有控制(桌面版同行右側,手機版換到第二排) */}
-            <div className="nd-toolbar-right">
+            {/* 右區:所有控制(桌面同行右側;小螢幕收進 toggle) */}
+            <div className="nd-toolbar-right" data-open={toolsOpen || undefined}>
               {/* 主題切換 */}
               <div className="nd-seg shrink-0">
                 <button data-active={theme === 'light'} onClick={() => setTheme('light')}>
