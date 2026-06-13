@@ -1,8 +1,8 @@
 node_modules/
 dist/
 dist-demo/
-site/dist/
-site/out/
+site/.next/
+site/public/demo/
 .next/
 *.tsbuildinfo
 .turbo/

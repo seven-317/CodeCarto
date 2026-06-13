@@ -2,7 +2,7 @@
 
 > 從程式碼自動生成、可人工策展、可向非技術人員簡報的互動式架構地圖。
 
-**[English](README.md) · [繁體中文](README.zh-tw.md)** · **[線上 demo](https://seven-317.github.io/CodeCarto/)**
+**[English](README.md) · [繁體中文](README.zh-tw.md)**
 
 ```bash
 npx codecarto
@@ -147,7 +147,7 @@ pnpm workspace + turborepo。發佈為單一套件 `codecarto`,內部分包在 b
 | `packages/server` | localhost HTTP + WebSocket、`codecarto.map.json` 原子寫入、Origin/Host 驗證。 |
 | `packages/ui` | Vite + React 19 + xyflow + elkjs 的 2D 畫布與策展 UI。 |
 | `packages/cli` | commander 入口;打包時把 UI 產物複製進 `dist/ui`。 |
-| `site` | Next.js(App Router、靜態輸出)文件站 + 內嵌 live demo;next-intl 雙語、next-themes 主題。 |
+| `site` | Next.js(App Router)文件站 — 首頁 / 功能 / 文件 分頁 + 內嵌 live demo;next-intl 雙語、next-themes 主題;部署到 Vercel。 |
 
 ## 開發
 
@@ -156,13 +156,15 @@ pnpm install
 pnpm build        # 全部 build(cli 會把 ui 產物複製進 dist/ui)
 pnpm test         # vitest(analyzer fixture 測試 + server 整合測試)
 pnpm typecheck
-pnpm build:site   # 組裝文件站 + demo 到 site/dist
+
+# 文件站(Next.js)— 先跑 prepare-demo 再 next dev 於 :4880
+pnpm --filter @codecarto/site dev
 
 # 從原始碼對真實專案執行
 node packages/cli/dist/cli.js map <某個 Next.js 專案>
 ```
 
-文件站(`site/`)build 成靜態輸出,push 到 `main` 時透過 `.github/workflows/pages.yml` 部署到 GitHub Pages。線上 demo 把真實 UI 嵌進 demo build(`VITE_CARTO_DEMO=1`):graph 與策展從靜態 JSON 載入、WebSocket 停用、策展只存在記憶體。
+文件站(`site/`)是 Next.js App Router app,部署到 Vercel(`vercel.json`:`pnpm build`、輸出 `site/.next`)。其 `prepare-demo` 步驟把真實 UI 以 demo 模式(`VITE_CARTO_DEMO=1`)build 進 `site/public/demo` 並掃 fixture,供內嵌 live demo 使用 — graph 與策展從靜態 JSON 載入、WebSocket 停用、策展只存在記憶體。
 
 ## 隱私與安全
 

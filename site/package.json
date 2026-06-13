@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/prepare-demo.mjs",
     "dev": "next dev --port 4880",
+    "prebuild": "node scripts/prepare-demo.mjs",
     "build": "next build",
+    "start": "next start --port 4880",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -15,9 +18,11 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@codecarto/ui": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "codecarto": "workspace:*",
     "typescript": "catalog:"
   }
 }

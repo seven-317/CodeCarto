@@ -1,60 +1,121 @@
 {
   "nav": {
-    "demo": "Demo",
-    "github": "GitHub"
+    "home": "首頁",
+    "features": "功能",
+    "docs": "文件",
+    "demo": "Demo"
   },
   "hero": {
     "tagline": "從程式碼自動生成、可人工策展、可向非技術人員簡報的互動式架構地圖。手繪架構圖三個月就過時;自動依賴圖又是幾百個節點的毛球。codecarto 兩者都不是。",
-    "liveDemo": "[ Live Demo ]",
-    "github": "[ GitHub ]",
-    "npm": "[ npm ]"
+    "ctaDemo": "[ 線上 Demo ]",
+    "ctaDocs": "[ 閱讀文件 ]",
+    "ctaGithub": "[ GitHub ]"
   },
-  "demo": {
-    "label": "Live Demo — 真實 UI,策展只存在記憶體,隨意玩"
-  },
-  "layers": {
-    "title": "三層結構",
-    "scan": {
-      "title": "自動分析",
-      "body": "ts-morph 掃描 import / export / dynamic import,加上 Next.js 語意層:Page、API(含 HTTP method)、fetch('/api/…') 連線、Prisma / Stripe 等 Service 節點、'use client' 邊界。永遠和程式碼同步。"
+  "home": {
+    "layersTitle": "三層結構",
+    "layers": {
+      "scan": {
+        "title": "自動分析",
+        "body": "ts-morph 掃描 import / export / dynamic import,加上 Next.js 語意層:Page、API(含 HTTP method)、fetch('/api/…') 連線、Prisma / Stripe 等 Service 節點、'use client' 邊界。永遠和程式碼同步。"
+      },
+      "curate": {
+        "title": "人工策展",
+        "body": "改名成業務語言(「會員登入系統」)、上色、分組、隱藏、手動補連線。策展存在 codecarto.map.json(建議 commit),重掃後依穩定節點 ID 重新疊加,改檔名也不會丟失。"
+      },
+      "present": {
+        "title": "溝通",
+        "body": "簡報模式沿資料流逐步走訪、NamedView 存常用視角、點擊高亮上下游鏈路、匯出 PNG / SVG / 互動式 HTML 直接交給甲方。"
+      }
     },
-    "curate": {
-      "title": "人工策展",
-      "body": "改名成業務語言(「會員登入系統」)、上色、分組、隱藏、手動補連線。策展存在 codecarto.map.json(建議 commit),重掃後依穩定節點 ID 重新疊加,不會因為改檔名就丟失。"
-    },
-    "present": {
-      "title": "溝通",
-      "body": "簡報模式沿資料流逐步走訪、NamedView 存常用視角、點擊高亮上下游鏈路、匯出 PNG / SVG / 互動式 HTML 直接交給甲方。"
-    }
-  },
-  "quickstart": {
-    "title": "快速開始",
-    "comment1": "# 在任何 TS / Next.js 專案根目錄(需有 tsconfig.json)",
-    "map": "# 掃描 + 開啟 localhost 地圖",
-    "watch": "# 監看原始碼,變更即時推送到瀏覽器",
-    "scan": "# 輸出 graph JSON 給腳本串接",
-    "init": "# 建立 codecarto.config.ts(完全可選)",
-    "comment2": "# 全域安裝後可用 cct 縮寫(cc 留給 Claude Code)"
+    "highlightsTitle": "為什麼用 codecarto",
+    "highlights": [
+      { "k": "永遠最新", "v": "每次執行都從程式碼生成 — 地圖不會與現實脫節。" },
+      { "k": "說業務語言", "v": "把技術節點策展成利害關係人真正聽得懂的語言。" },
+      { "k": "為簡報而生", "v": "走訪資料流、高亮路徑、匯出乾淨圖片 — 不必分享 IDE 畫面。" },
+      { "k": "本機且私密", "v": "掃描在本機執行;寫入的唯一檔案是 codecarto.map.json。" }
+    ],
+    "demoLabel": "線上 Demo — 真實 UI,策展只存在記憶體,隨意玩",
+    "demoOpen": "開啟完整 demo →",
+    "ctaTitle": "一行指令畫出你的專案",
+    "ctaBody": "零設定。指向任何 TypeScript 或 Next.js 專案,即可在瀏覽器開啟地圖。",
+    "ctaDocs": "[ 閱讀文件 ]",
+    "ctaGithub": "[ GitHub ]"
   },
   "features": {
     "title": "功能",
-    "semantics": { "k": "Next.js 語意", "v": "Page / API route / fetch 連線 / Service 偵測 / 'use client' 邊界" },
-    "curation": { "k": "策展", "v": "改名、上色、分組、隱藏、釘選、手動連線 — 全部存進 codecarto.map.json" },
-    "migration": { "k": "改名遷移", "v": "檔案改名後策展不丟失:偵測 stale 紀錄,一鍵搬移到新節點" },
-    "presentation": { "k": "簡報模式", "v": "隱藏全部 chrome,點節點沿資料流逐步走訪,方向鍵翻頁" },
-    "views": { "k": "NamedView", "v": "把目前的子集與視角存成具名視圖,一鍵切換" },
-    "flow": { "k": "資料流動畫", "v": "封包點沿連線流動,來源與方向一目了然" },
-    "export": { "k": "匯出", "v": "PNG(點陣 2×)/ SVG(向量)/ 自包含互動式 HTML(可離線開啟)" },
-    "watch": { "k": "Watch mode", "v": "原始碼變更即時重掃,新節點綠色閃爍提示" },
-    "perf": { "k": "大圖效能", "v": "viewport culling + 低 zoom LOD,數百節點依然流暢" }
+    "intro": "codecarto 的全部能力,依三層結構分組 — 分析、策展、溝通 — 以及讓大圖維持流暢的部分。",
+    "groups": {
+      "analysis": "分析",
+      "curation": "策展",
+      "communication": "溝通",
+      "performance": "效能"
+    },
+    "items": {
+      "semantics": { "k": "Next.js 語意", "v": "Page / API route / fetch 連線 / Service 偵測 / 'use client' 邊界" },
+      "services": { "k": "Service 偵測", "v": "內建 Prisma、Drizzle、Mongoose、Supabase、Stripe、Resend、AWS、Redis、Firebase、OpenAI、Anthropic 規則,可自行擴充" },
+      "stable": { "k": "穩定節點 ID", "v": "策展依相對路徑 / 路由重新疊加,重掃不丟失編輯" },
+      "curation": { "k": "改名 / 上色 / 分組 / 隱藏 / 釘選", "v": "手動形塑地圖;全部存進 codecarto.map.json" },
+      "manual": { "k": "手動連線", "v": "補上靜態程式碼無法推斷的邏輯連線" },
+      "migration": { "k": "改名遷移", "v": "檔案改名後偵測 stale 策展,一鍵搬移到新節點" },
+      "presentation": { "k": "簡報模式", "v": "隱藏全部 chrome,點節點沿資料流走訪,方向鍵翻頁" },
+      "views": { "k": "NamedView", "v": "把目前的子集與視角存成具名視圖,一鍵切換" },
+      "flow": { "k": "資料流動畫", "v": "封包點沿連線流動,來源與方向一目了然" },
+      "export": { "k": "匯出", "v": "PNG(點陣 2×)/ SVG(向量)/ 自包含互動式 HTML" },
+      "watch": { "k": "Watch mode", "v": "原始碼變更即時重掃,新節點綠色閃爍" },
+      "perf": { "k": "大圖效能", "v": "viewport culling + 低 zoom LOD 讓數百節點流暢;密圖自動降級到迭代式佈局" }
+    },
+    "exportTitle": "匯出格式",
+    "export": [
+      { "k": "PNG", "v": "2× 裝置像素點陣圖,框住整張地圖,與當前縮放/平移無關。" },
+      { "k": "SVG", "v": "手刻向量:bezier 邊、各色箭頭 marker、斜紋 service 節點 — 不是 DOM 截圖。" },
+      { "k": "HTML", "v": "單一自包含檔案:SVG 加上內嵌純 JS viewer,可 pan/zoom、點擊高亮。離線可開,無相依。" }
+    ],
+    "exportNote": "連線的封包流動動畫僅限 host 瀏覽:PNG 匯出時與低 zoom 時隱藏,也不會嵌進 SVG/HTML 匯出。"
   },
-  "config": {
-    "title": "設定(可選)",
-    "comment": "// codecarto.config.ts — 零設定也能跑"
-  },
-  "privacy": {
-    "label": "[ Privacy ]",
-    "body": "掃描在本機執行,server 只綁定 127.0.0.1 並驗證 Origin(DNS rebinding 防護)。你的程式碼不會離開你的電腦;寫入專案的唯一檔案是 codecarto.map.json。"
+  "docs": {
+    "title": "文件",
+    "installTitle": "快速開始",
+    "install": {
+      "comment1": "# 在任何 TS / Next.js 專案根目錄(需有 tsconfig.json)",
+      "map": "# 掃描 + 開啟 localhost 地圖",
+      "watch": "# 監看原始碼,變更即時推送到瀏覽器",
+      "scan": "# 輸出 graph JSON 給腳本串接",
+      "init": "# 建立 codecarto.config.ts(完全可選)",
+      "comment2": "# 全域安裝後可用 cct 縮寫(cc 留給 Claude Code)"
+    },
+    "cliTitle": "CLI 參考",
+    "cliCommandsHead": { "name": "指令", "desc": "說明" },
+    "cliCommands": [
+      { "name": "codecarto [map] [dir]", "desc": "掃描 dir(預設為當前目錄)並開啟 localhost 地圖。map 是預設指令,所以 codecarto 單獨執行即可。" },
+      { "name": "codecarto scan [dir]", "desc": "只掃描,印出 kind/edge 統計。加 --json 把完整 graph JSON 輸出到 stdout。" },
+      { "name": "codecarto init [dir]", "desc": "寫出 codecarto.config.ts 範本。設定完全可選,零設定也能跑。" }
+    ],
+    "cliOptionsTitle": "map 選項",
+    "cliOptions": [
+      { "name": "-p, --port <port>", "desc": "偏好的 port(預設 4870);被占用時往後找。" },
+      { "name": "-w, --watch", "desc": "監看原始碼變更並即時推送重掃;新節點綠色閃爍。" },
+      { "name": "--no-open", "desc": "不自動開啟瀏覽器。" }
+    ],
+    "cliAlias": "cct 是 codecarto 的別名 — 所有指令與旗標完全相同。",
+    "configTitle": "設定(可選)",
+    "configComment": "// codecarto.config.ts — 零設定也能跑",
+    "configNote": "service 規則以 module specifier 前綴比對(例如 import:@scope/pkg),疊加在內建規則表之上。",
+    "mapTitle": "codecarto.map.json 格式",
+    "mapIntro": "專案根目錄的單一 JSON 檔,以穩定 key 排序寫出,確保 git diff 可讀。建議 commit。每筆都以穩定節點 ID(相對路徑或路由路徑)為 key,重掃後策展會重新疊加。",
+    "mapKeys": [
+      { "k": "nodes", "v": "每節點策展:label、color、icon、hidden、pinned、groupId。" },
+      { "k": "groups", "v": "群組定義:label、color、collapsed。" },
+      { "k": "layout2d", "v": "手動節點座標;沒有的節點走自動佈局。" },
+      { "k": "annotations", "v": "手動 edge / text / frame 疊加。" },
+      { "k": "views", "v": "NamedView:節點子集(空 = 全部)加上可選視角。" }
+    ],
+    "privacyTitle": "隱私與安全",
+    "privacy": [
+      "掃描完全在本機執行。",
+      "server 只綁定 127.0.0.1 並驗證 Host 與 Origin header(DNS rebinding 防護)。",
+      "分析快取放在 node_modules/.cache/codecarto/,不碰你的原始碼樹。",
+      "寫入專案的唯一檔案是 codecarto.map.json。"
+    ]
   },
   "footer": {
     "license": "codecarto — MIT License"
