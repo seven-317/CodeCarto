@@ -202,6 +202,26 @@ header {
   color: var(--surface);
 }
 
+/* 主題 icon 鈕(太陽 / 月亮) */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-visible);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease);
+}
+.theme-toggle:hover {
+  border-color: var(--text-display);
+  color: var(--text-display);
+}
+
 /* ——— Hero ——— */
 .hero {
   padding-top: 128px;
@@ -245,7 +265,8 @@ header {
 .hero .links {
   margin-top: 24px;
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 12px 20px;
 }
 .hero .links a {
   font-family: var(--font-mono);
@@ -471,6 +492,7 @@ pre .k {
 }
 .cta .links {
   justify-content: center;
+  flex-wrap: wrap;
 }
 @media (max-width: 640px) {
   .cta {
