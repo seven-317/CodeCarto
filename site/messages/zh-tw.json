@@ -1,0 +1,62 @@
+{
+  "nav": {
+    "demo": "Demo",
+    "github": "GitHub"
+  },
+  "hero": {
+    "tagline": "從程式碼自動生成、可人工策展、可向非技術人員簡報的互動式架構地圖。手繪架構圖三個月就過時;自動依賴圖又是幾百個節點的毛球。codecarto 兩者都不是。",
+    "liveDemo": "[ Live Demo ]",
+    "github": "[ GitHub ]",
+    "npm": "[ npm ]"
+  },
+  "demo": {
+    "label": "Live Demo — 真實 UI,策展只存在記憶體,隨意玩"
+  },
+  "layers": {
+    "title": "三層結構",
+    "scan": {
+      "title": "自動分析",
+      "body": "ts-morph 掃描 import / export / dynamic import,加上 Next.js 語意層:Page、API(含 HTTP method)、fetch('/api/…') 連線、Prisma / Stripe 等 Service 節點、'use client' 邊界。永遠和程式碼同步。"
+    },
+    "curate": {
+      "title": "人工策展",
+      "body": "改名成業務語言(「會員登入系統」)、上色、分組、隱藏、手動補連線。策展存在 codecarto.map.json(建議 commit),重掃後依穩定節點 ID 重新疊加,不會因為改檔名就丟失。"
+    },
+    "present": {
+      "title": "溝通",
+      "body": "簡報模式沿資料流逐步走訪、NamedView 存常用視角、點擊高亮上下游鏈路、匯出 PNG / SVG / 互動式 HTML 直接交給甲方。"
+    }
+  },
+  "quickstart": {
+    "title": "快速開始",
+    "comment1": "# 在任何 TS / Next.js 專案根目錄(需有 tsconfig.json)",
+    "map": "# 掃描 + 開啟 localhost 地圖",
+    "watch": "# 監看原始碼,變更即時推送到瀏覽器",
+    "scan": "# 輸出 graph JSON 給腳本串接",
+    "init": "# 建立 codecarto.config.ts(完全可選)",
+    "comment2": "# 全域安裝後可用 cct 縮寫(cc 留給 Claude Code)"
+  },
+  "features": {
+    "title": "功能",
+    "semantics": { "k": "Next.js 語意", "v": "Page / API route / fetch 連線 / Service 偵測 / 'use client' 邊界" },
+    "curation": { "k": "策展", "v": "改名、上色、分組、隱藏、釘選、手動連線 — 全部存進 codecarto.map.json" },
+    "migration": { "k": "改名遷移", "v": "檔案改名後策展不丟失:偵測 stale 紀錄,一鍵搬移到新節點" },
+    "presentation": { "k": "簡報模式", "v": "隱藏全部 chrome,點節點沿資料流逐步走訪,方向鍵翻頁" },
+    "views": { "k": "NamedView", "v": "把目前的子集與視角存成具名視圖,一鍵切換" },
+    "flow": { "k": "資料流動畫", "v": "封包點沿連線流動,來源與方向一目了然" },
+    "export": { "k": "匯出", "v": "PNG(點陣 2×)/ SVG(向量)/ 自包含互動式 HTML(可離線開啟)" },
+    "watch": { "k": "Watch mode", "v": "原始碼變更即時重掃,新節點綠色閃爍提示" },
+    "perf": { "k": "大圖效能", "v": "viewport culling + 低 zoom LOD,數百節點依然流暢" }
+  },
+  "config": {
+    "title": "設定(可選)",
+    "comment": "// codecarto.config.ts — 零設定也能跑"
+  },
+  "privacy": {
+    "label": "[ Privacy ]",
+    "body": "掃描在本機執行,server 只綁定 127.0.0.1 並驗證 Origin(DNS rebinding 防護)。你的程式碼不會離開你的電腦;寫入專案的唯一檔案是 codecarto.map.json。"
+  },
+  "footer": {
+    "license": "codecarto — MIT License"
+  }
+}

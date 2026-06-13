@@ -2,6 +2,9 @@ node_modules/
 dist/
 dist-demo/
 site/dist/
+site/out/
+.next/
+*.tsbuildinfo
 .turbo/
 *.log
 .DS_Store
