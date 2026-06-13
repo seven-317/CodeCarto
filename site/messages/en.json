@@ -1,0 +1,62 @@
+{
+  "nav": {
+    "demo": "Demo",
+    "github": "GitHub"
+  },
+  "hero": {
+    "tagline": "An interactive architecture map generated from your code, curated by hand, and built to be presented to non-technical people. Hand-drawn diagrams go stale in three months; auto-generated dependency graphs are a 300-node hairball. codecarto is neither.",
+    "liveDemo": "[ Live Demo ]",
+    "github": "[ GitHub ]",
+    "npm": "[ npm ]"
+  },
+  "demo": {
+    "label": "Live Demo — the real UI; curation lives in memory only, play freely"
+  },
+  "layers": {
+    "title": "Three layers",
+    "scan": {
+      "title": "Automatic analysis",
+      "body": "ts-morph scans import / export / dynamic import, plus a Next.js semantic layer: Pages, API routes (with HTTP methods), fetch('/api/…') wiring, service nodes like Prisma / Stripe, and 'use client' boundaries. Always in sync with the code."
+    },
+    "curate": {
+      "title": "Human curation",
+      "body": "Rename nodes into business language (\"Member login\"), color, group, hide, draw manual edges. Curation lives in codecarto.map.json (commit it) and is re-applied by stable node IDs after every rescan — renaming a file won't lose your work."
+    },
+    "present": {
+      "title": "Communication",
+      "body": "Presentation mode walks a data flow step by step, NamedViews save your go-to perspectives, clicking highlights the up/downstream chain, and exports (PNG / SVG / interactive HTML) go straight to your client."
+    }
+  },
+  "quickstart": {
+    "title": "Quick start",
+    "comment1": "# in any TS / Next.js project root (needs tsconfig.json)",
+    "map": "# scan + open the localhost map",
+    "watch": "# watch sources, push changes to the browser live",
+    "scan": "# print graph JSON for scripting",
+    "init": "# create codecarto.config.ts (entirely optional)",
+    "comment2": "# after a global install, use the cct shorthand (cc is taken by Claude Code)"
+  },
+  "features": {
+    "title": "Features",
+    "semantics": { "k": "Next.js semantics", "v": "Pages / API routes / fetch wiring / service detection / 'use client' boundaries" },
+    "curation": { "k": "Curation", "v": "Rename, color, group, hide, pin, manual edges — all stored in codecarto.map.json" },
+    "migration": { "k": "Rename migration", "v": "Curation survives file renames: stale entries are detected and migrated to the new node in one click" },
+    "presentation": { "k": "Presentation mode", "v": "Hides all chrome; click a node to walk its data flow, arrow keys to step" },
+    "views": { "k": "NamedView", "v": "Save the current subset and viewport as a named view, switch in one click" },
+    "flow": { "k": "Flow animation", "v": "Packet dots travel along edges — source and direction at a glance" },
+    "export": { "k": "Export", "v": "PNG (bitmap 2×) / SVG (vector) / self-contained interactive HTML (works offline)" },
+    "watch": { "k": "Watch mode", "v": "Rescans on source changes; new nodes flash green" },
+    "perf": { "k": "Large graphs", "v": "Viewport culling + low-zoom LOD keep hundreds of nodes smooth" }
+  },
+  "config": {
+    "title": "Configuration (optional)",
+    "comment": "// codecarto.config.ts — zero-config works too"
+  },
+  "privacy": {
+    "label": "[ Privacy ]",
+    "body": "Scanning runs locally. The server binds to 127.0.0.1 only and validates Origin (DNS-rebinding protection). Your code never leaves your machine; the only file written to your project is codecarto.map.json."
+  },
+  "footer": {
+    "license": "codecarto — MIT License"
+  }
+}
