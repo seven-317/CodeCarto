@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { setRequestLocale } from 'next-intl/server'
 import { ThemeProvider } from 'next-themes'
+import { IntroMask } from '@/components/IntroMask'
 import { routing } from '@/i18n/routing'
 import '../globals.css'
 
@@ -40,7 +41,10 @@ export default async function LocaleLayout({
       </head>
       <body>
         <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
-          <NextIntlClientProvider>{children}</NextIntlClientProvider>
+          <NextIntlClientProvider>
+            <IntroMask />
+            {children}
+          </NextIntlClientProvider>
         </ThemeProvider>
       </body>
     </html>
