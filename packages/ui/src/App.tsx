@@ -538,7 +538,7 @@ function CartoApp() {
                   </button>
                   {openMenu === 'stale' && (
                     <div
-                      className="nd-card absolute right-0 top-full mt-2 w-80 overflow-hidden z-50"
+                      className="nd-card nd-dropdown absolute top-full mt-2 w-80 overflow-hidden z-50"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div
@@ -607,7 +607,7 @@ function CartoApp() {
                 </button>
                 {openMenu === 'views' && (
                   <div
-                    className="nd-card absolute right-0 top-full mt-2 w-64 overflow-hidden z-50"
+                    className="nd-card nd-dropdown absolute top-full mt-2 w-64 overflow-hidden z-50"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -692,7 +692,7 @@ function CartoApp() {
                 </button>
                 {openMenu === 'export' && (
                   <div
-                    className="nd-card absolute right-0 top-full mt-2 w-52 overflow-hidden z-50"
+                    className="nd-card nd-dropdown absolute top-full mt-2 w-52 overflow-hidden z-50"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
