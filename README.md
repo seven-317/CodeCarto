@@ -1,5 +1,8 @@
 # codecarto
 
+[![BuyMeACoffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/seven317)
+
+
 ![npm version](https://img.shields.io/npm/v/codecarto?style=flat-square&color=3178C6)
 ![npm downloads](https://img.shields.io/npm/dm/codecarto?style=flat-square&color=2496ED)
 ![npm type definitions](https://img.shields.io/npm/types/codecarto?style=flat-square&color=00599C)
