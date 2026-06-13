@@ -179,14 +179,42 @@ body,
   flex-shrink: 0;
 }
 
-/* 手機版:右區換到第二排 */
+/* 收合鈕:桌面隱藏,小螢幕才出現 */
+.nd-tools-toggle {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 1;
+  width: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-display);
+  cursor: pointer;
+}
+
+/* 手機版:右區預設收起,點 toggle 才展開成第二排 */
 @media (max-width: 700px) {
+  .nd-tools-toggle {
+    display: inline-flex;
+  }
+  /* 省空間:小螢幕收起儲存狀態 */
+  .nd-saved {
+    display: none;
+  }
   .nd-toolbar-right {
+    display: none;
     width: 100%;
     height: auto;
     padding: 8px 12px;
     border-top: 1px solid var(--border);
     flex-wrap: wrap;
+  }
+  .nd-toolbar-right[data-open] {
+    display: flex;
   }
 }
 
