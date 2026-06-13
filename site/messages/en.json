@@ -6,7 +6,7 @@
     "demo": "Demo"
   },
   "hero": {
-    "tagline": "An architecture map drawn straight from your code — tidy it up by hand, then take it to people who don't read code. Hand-drawn diagrams go stale in three months; auto dependency graphs are a 300-node hairball. codecarto is neither.",
+    "tagline": "An interactive architecture map generated from your code, curated by hand, and built to be presented to non-technical people. Hand-drawn diagrams go stale in three months; auto-generated dependency graphs are a 300-node hairball. codecarto is neither.",
     "ctaDemo": "[ Live Demo ]",
     "ctaDocs": "[ Read the Docs ]",
     "ctaGithub": "[ GitHub ]"
@@ -37,7 +37,7 @@
     "demoLabel": "Live Demo — the real UI; curation lives in memory only, play freely",
     "demoOpen": "Open full demo →",
     "ctaTitle": "Map your project in one command",
-    "ctaBody": "No config. Point it at any TypeScript or Next.js project and the map opens in your browser.",
+    "ctaBody": "No config required. Point it at any TypeScript or Next.js project and open the map in your browser.",
     "ctaDocs": "[ Read the Docs ]",
     "ctaGithub": "[ GitHub ]"
   },

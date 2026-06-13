@@ -6,7 +6,7 @@
     "demo": "Demo"
   },
   "hero": {
-    "tagline": "從你的程式碼自動畫出架構地圖,還能手動整理、直接拿去跟不懂程式的人講。手繪的圖三個月就過時,自動依賴圖又是一團上百個節點的毛球。codecarto 兩者都不是。",
+    "tagline": "從程式碼自動生成、可人工策展、可向非技術人員簡報的互動式架構地圖。手繪架構圖三個月就過時;自動依賴圖又是幾百個節點的毛球。codecarto 兩者都不是。",
     "ctaDemo": "[ 線上 Demo ]",
     "ctaDocs": "[ 讀文檔 ]",
     "ctaGithub": "[ GitHub ]"
@@ -37,7 +37,7 @@
     "demoLabel": "線上 Demo — 真實 UI,策展只存在記憶體,隨意玩",
     "demoOpen": "開啟完整 demo →",
     "ctaTitle": "一行指令畫出你的專案",
-    "ctaBody": "零設定。對著任何 TypeScript 或 Next.js 專案跑一下,地圖就在瀏覽器打開。",
+    "ctaBody": "零設定。指向任何 TypeScript 或 Next.js 專案,即可在瀏覽器開啟地圖。",
     "ctaDocs": "[ 讀文檔 ]",
     "ctaGithub": "[ GitHub ]"
   },
