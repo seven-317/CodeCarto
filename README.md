@@ -1,5 +1,12 @@
 # codecarto
 
+![npm version](https://img.shields.io/npm/v/codecarto?style=flat-square&color=3178C6)
+![npm downloads](https://img.shields.io/npm/dm/codecarto?style=flat-square&color=2496ED)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/codecarto?style=flat-square&color=339933)
+![npm type definitions](https://img.shields.io/npm/types/codecarto?style=flat-square&color=00599C)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/seven-317/codecarto/ci.yml?style=flat-square&logo=github)
+![npm license](https://img.shields.io/npm/l/codecarto?style=flat-square&color=F38020)
+
 > An interactive architecture map generated from your code — curated by hand, ready to present to non-technical people.
 
 **[English](README.md) · [繁體中文](README.zh-tw.md)**
