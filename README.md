@@ -164,7 +164,7 @@ pnpm --filter @codecarto/site dev
 node packages/cli/dist/cli.js map <some-next-app>
 ```
 
-The docs site (`site/`) is a Next.js App Router app deployed to Vercel (`vercel.json`: `pnpm build`, output `site/.next`). Its `prepare-demo` step builds the real UI in demo mode (`VITE_CARTO_DEMO=1`) into `site/public/demo` and scans the fixture for the embedded live demo — graph and curation load from static JSON, the WebSocket is disabled, and curation lives in memory only.
+The docs site (`site/`) is a Next.js App Router app deployed to Vercel — set the project **Root Directory** to `site` and leave Build/Output settings on their defaults. Its `prebuild` step (`prepare-demo`) builds the real UI in demo mode (`VITE_CARTO_DEMO=1`) into `site/public/demo` and scans the fixture for the embedded live demo; when the workspace CLI isn't built yet it runs `turbo run build --filter=codecarto` first. Graph and curation load from static JSON, the WebSocket is disabled, and curation lives in memory only.
 
 ## Privacy & security
 
