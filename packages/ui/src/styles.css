@@ -179,6 +179,20 @@ body,
   flex-shrink: 0;
 }
 
+/* 下拉選單:桌面靠按鈕右緣對齊;小螢幕改靠左並限寬,避免溢出畫面外 */
+.nd-dropdown {
+  right: 0;
+}
+@media (max-width: 700px) {
+  .nd-dropdown {
+    right: auto;
+    left: 0;
+    width: auto;
+    min-width: 200px;
+    max-width: 80vw;
+  }
+}
+
 /* 收合鈕:桌面隱藏,小螢幕才出現 */
 .nd-tools-toggle {
   display: none;
