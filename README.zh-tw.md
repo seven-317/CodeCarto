@@ -164,7 +164,7 @@ pnpm --filter @codecarto/site dev
 node packages/cli/dist/cli.js map <某個 Next.js 專案>
 ```
 
-文檔站(`site/`)是 Next.js App Router app,部署到 Vercel(`vercel.json`:`pnpm build`、輸出 `site/.next`)。其 `prepare-demo` 步驟把真實 UI 以 demo 模式(`VITE_CARTO_DEMO=1`)build 進 `site/public/demo` 並掃 fixture,供內嵌 live demo 使用 — graph 與策展從靜態 JSON 載入、WebSocket 停用、策展只存在記憶體。
+文檔站(`site/`)是 Next.js App Router app,部署到 Vercel — 專案 **Root Directory** 設為 `site`,Build/Output 設定維持預設即可。其 `prebuild`(`prepare-demo`)把真實 UI 以 demo 模式(`VITE_CARTO_DEMO=1`)build 進 `site/public/demo` 並掃 fixture;若 workspace CLI 尚未建置,會先跑 `turbo run build --filter=codecarto`。graph 與策展從靜態 JSON 載入、WebSocket 停用、策展只存在記憶體。
 
 ## 隱私與安全
 
