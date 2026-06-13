@@ -2,7 +2,7 @@
 
 > An interactive architecture map generated from your code, curated by hand, and built to be presented to non-technical people.
 
-**[English](README.md) · [繁體中文](README.zh-tw.md)** · **[Live demo](https://seven-317.github.io/CodeCarto/)**
+**[English](README.md) · [繁體中文](README.zh-tw.md)**
 
 ```bash
 npx codecarto
@@ -147,7 +147,7 @@ pnpm workspace + turborepo. Published as a single package, `codecarto`, with int
 | `packages/server` | localhost HTTP + WebSocket, atomic `codecarto.map.json` writes, Origin/Host validation. |
 | `packages/ui` | Vite + React 19 + xyflow + elkjs 2D canvas and curation UI. |
 | `packages/cli` | commander entry point; copies the UI build into `dist/ui` at package time. |
-| `site` | Next.js (App Router, static export) docs site + embedded live demo; bilingual via next-intl, theming via next-themes. |
+| `site` | Next.js (App Router) docs site — Home / Features / Docs pages + embedded live demo; bilingual via next-intl, theming via next-themes; deploys to Vercel. |
 
 ## Development
 
@@ -156,13 +156,15 @@ pnpm install
 pnpm build        # build everything (cli copies the ui build into dist/ui)
 pnpm test         # vitest (analyzer fixture tests + server integration tests)
 pnpm typecheck
-pnpm build:site   # assemble the docs site + demo into site/dist
+
+# docs site (Next.js) — runs prepare-demo then next dev on :4880
+pnpm --filter @codecarto/site dev
 
 # run against a real project from source
 node packages/cli/dist/cli.js map <some-next-app>
 ```
 
-The docs site (`site/`) builds to a static export and deploys to GitHub Pages via `.github/workflows/pages.yml` on push to `main`. The hosted demo embeds the real UI in a demo build (`VITE_CARTO_DEMO=1`): graph and curation load from static JSON, the WebSocket is disabled, and curation lives in memory only.
+The docs site (`site/`) is a Next.js App Router app deployed to Vercel (`vercel.json`: `pnpm build`, output `site/.next`). Its `prepare-demo` step builds the real UI in demo mode (`VITE_CARTO_DEMO=1`) into `site/public/demo` and scans the fixture for the embedded live demo — graph and curation load from static JSON, the WebSocket is disabled, and curation lives in memory only.
 
 ## Privacy & security
 
