@@ -50,7 +50,9 @@ body {
 .wrap {
   max-width: 920px;
   margin: 0 auto;
-  padding: 0 32px;
+  /* 只設水平 padding;用 shorthand 會把 padding-bottom 歸零,蓋掉 section 的間距 */
+  padding-left: 32px;
+  padding-right: 32px;
 }
 
 /* mono caps 標籤(tertiary)*/
@@ -534,8 +536,10 @@ pre .k {
   margin: 0 auto;
 }
 .cta .links {
+  display: flex;
   justify-content: center;
   flex-wrap: wrap;
+  gap: 12px 24px;
 }
 @media (max-width: 640px) {
   .cta {
