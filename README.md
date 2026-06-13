@@ -173,12 +173,6 @@ The docs site (`site/`) is a Next.js App Router app deployed to Vercel (`vercel.
 - The analysis cache goes to `node_modules/.cache/codecarto/`, not your source tree.
 - The only file ever written to your project is `codecarto.map.json`.
 
-## Roadmap
-
-- **M1 — Foundation** ✅ — analyzer, server, CLI, 2D canvas + curation, Nothing-style UI (light + dark).
-- **M2 — Communication** ✅ — presentation mode & path walk, SVG / self-contained HTML export, NamedView, stale-curation cleanup & rename migration.
-- **M3 — Experience & reach** ✅ — large-graph virtualization (viewport culling + low-zoom LOD, ELK fallback for dense graphs), docs site + hosted demo.
-- Dropped: 3D view — looks impressive, isn't useful; 2D + curation + presentation already covers the communication need.
 
 ## License
 
